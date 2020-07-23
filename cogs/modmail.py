@@ -1,4 +1,4 @@
-from checks import *
+from utils.checks import *
 import typing
 
 
@@ -30,24 +30,6 @@ class ModmailCog(commands.Cog):
     @is_owner()
     async def logs(self, ctx):
         await ctx.send("Displaying logs")
-
-    # Mute takes optional user id.
-    #  if no user id is given, user id of user in current modmail channel
-    #  mutes discord user from modmail
-    #  sends confirmation on success, error on failure
-    @commands.command()
-    @is_owner()
-    async def mute(self, ctx, user_id: typing.Optional[str] = ""):
-        await ctx.send(f"Muting user {user_id}")
-
-    # Unmute takes optional user id.
-    #  if no user id is given, user id of user in current modmail channel
-    #  unmutes discord user from modmail
-    #  sends confirmation on success, error on failure
-    @commands.command()
-    @is_owner()
-    async def unmute(self, ctx, user_id: typing.Optional[str] = ""):
-        await ctx.send(f"Unmuting user {user_id}")
 
     # Standardreply takes reply_id integer
     #  replies with standard reply

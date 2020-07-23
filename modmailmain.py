@@ -13,6 +13,8 @@ class Bot(commands.Bot):
 
         self.load_extension('cogs.modmail')
         self.load_extension('cogs.admin')
+        self.load_extension('cogs.muted')
+        self.load_extension('tasks.muted_tasks')
 
     @staticmethod
     async def on_ready():

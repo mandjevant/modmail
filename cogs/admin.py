@@ -1,4 +1,4 @@
-from checks import *
+from utils.checks import *
 import typing
 
 
@@ -99,7 +99,6 @@ class adminCog(commands.Cog):
             await ctx.send("Please specify an existing table.")
         else:
             await ctx.send(f"Unknown error occured.\n{str(err)}")
-            raise err
 
     """
     @commands.command()
