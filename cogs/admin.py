@@ -51,11 +51,9 @@ class adminCog(commands.Cog):
     @commands.command()
     @is_owner()
     async def query(self, ctx, fetch: str, *, arg: str):
-        cursor = self.db_conn.cursor()
-        cursor.execute("%s" % arg)
 
         if fetch == "all":
-            i = cursor.fetchall()
+            i = await self.db_conn.fetch(arg)
 
             description = ""
             for ret in i:
@@ -67,15 +65,15 @@ class adminCog(commands.Cog):
             await ctx.send(description)
 
         elif fetch == "one":
-            i = cursor.fetchone()
+            i = await self.db_conn.fetchrow(arg)
             value = str(i[0])
 
             await ctx.send(str(value))
 
         elif fetch == "commit":
-            self.db_conn.commit()
+            await self.db_conn.execute(arg)
 
-            await ctx.send("Commited the query.")
+            await ctx.send(f"`{arg}` Committed the query.")
 
     @query.error
     async def query_error(self, ctx, err):
@@ -89,10 +87,8 @@ class adminCog(commands.Cog):
     @commands.command()
     @is_owner()
     async def columns(self, ctx, table):
-        cursor = self.db_conn.cursor()
-        cursor.execute("SELECT * FROM %s LIMIT 0" % (table))
-        colnames = [desc[0] for desc in cursor.description]
-
+        result = dict(await self.db_conn.fetchrow(f'SELECT * FROM {table} LIMIT 1'))
+        colnames = str([key for key, value in result.items()])
         await ctx.send(str(colnames))
 
     @columns.error
@@ -103,7 +99,9 @@ class adminCog(commands.Cog):
             await ctx.send("Please specify an existing table.")
         else:
             await ctx.send(f"Unknown error occured.\n{str(err)}")
+            raise err
 
+    """
     @commands.command()
     @is_owner()
     async def rollback(self, ctx):
@@ -116,6 +114,7 @@ class adminCog(commands.Cog):
             await ctx.send("Sorry, you do not have permission to use this command.")
         else:
             await ctx.send(f"Unknown error occured.\n{str(err)}")
+    """
 
     @commands.command()
     @is_owner()

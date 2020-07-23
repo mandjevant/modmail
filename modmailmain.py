@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 from discord.ext import commands
-import psycopg2
+import asyncpg
 import asyncio
 import sys
 import os
@@ -26,16 +26,16 @@ class Database:
     db_conn = None
 
     @staticmethod
-    def initiate_database():
+    async def initiate_database():
         try:
-            Database.db_conn = psycopg2.connect(user=Config.conf.get('database_creds', 'username'),
-                                                password=Config.conf.get('database_creds', 'password'),
-                                                host=Config.conf.get('database_creds', 'host'),
-                                                port=Config.conf.get('database_creds', 'port'),
-                                                database=Config.conf.get('database_creds', 'database'))
+            Database.db_conn = await asyncpg.create_pool(user=Config.conf.get('database_creds', 'username'),
+                                                         password=Config.conf.get('database_creds', 'password'),
+                                                         host=Config.conf.get('database_creds', 'host'),
+                                                         port=Config.conf.get('database_creds', 'port'),
+                                                         database=Config.conf.get('database_creds', 'database'))
             return True
 
-        except psycopg2.Error as e:
+        except Exception as e:
             print('Failed to connect to database', e)
             return False
 
@@ -64,10 +64,10 @@ def main():
     if not Config.initiate_config():
         sys.exit()
 
-    if not Database.initiate_database():
+    event_loop = asyncio.get_event_loop()
+    if not event_loop.run_until_complete(Database.initiate_database()):
         sys.exit()
 
-    event_loop = asyncio.get_event_loop()
     bot = Bot(database_conn=Database.db_conn, event_loop=event_loop)
     bot.run()
 

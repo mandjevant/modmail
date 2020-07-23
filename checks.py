@@ -13,7 +13,7 @@ def exc(func):
 
 @exc
 def owner_check(ctx):
-    owners = [204184798200201216, 586715866129891328]
+    owners = [204184798200201216, 586715866129891328, 357918459058978816]
 
     return ctx.author.id in owners
 
