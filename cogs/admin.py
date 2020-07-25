@@ -12,6 +12,7 @@ class adminCog(commands.Cog):
     async def reloadcogs(self, ctx):
         self.bot.reload_extension('cogs.admin')
         self.bot.reload_extension('cogs.modmail')
+        self.bot.reload_extension('cogs.muted')
 
         await ctx.send(f"{ctx.author.mention}, all cogs have been reloaded.")
 
