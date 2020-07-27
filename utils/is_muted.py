@@ -1,4 +1,5 @@
 
+
 # is_muted takes an int user_id and a database connection, for example bot.db_conn
 #  It check if user is muted or not
 #  It returns true if user is muted, false if user isn't muted

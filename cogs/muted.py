@@ -20,7 +20,6 @@ is_muted <userid or tag user> returns boolean value
 
 
 class Time:
-
     @staticmethod
     def convert_to_hours(time: str) -> int:
         hours_per_unit = {"h": 1, "d": 24, "w": 168, "m": 730, "y": 8766}
@@ -37,7 +36,6 @@ class Time:
 
 
 class MutedCog(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
         self.db_conn = self.bot.db_conn
