@@ -21,11 +21,13 @@ class CategoriesCog(commands.Cog):
     @commands.guild_only()
     async def link_category(self, ctx, category_id: int, guild_id: int) -> None:
         if not await fetch_guild(self.bot, guild_id):
-            await ctx.send("Unable to fetch guild. Please check if the ID is correct.")
+            await ctx.send(embed=common_embed("Link category",
+                                              "Unable to fetch guild. Please check if the ID is correct."))
             return
 
         if not await fetch_category(self.bot, category_id, guild_id):
-            await ctx.send("Unable to fetch category. Please check if the ID is correct.")
+            await ctx.send(embed=common_embed("Link category",
+                                              "Unable to fetch category. Please check if the ID is correct."))
             return
 
         msg = await ctx.send(embed=common_embed("Link category", "Please react to this message with an emoji you "
@@ -76,7 +78,6 @@ class CategoriesCog(commands.Cog):
                                    category_id, category.name, guild_id, reaction.emoji)
 
         await ctx.send(embed=common_embed("Link category", "Success! The category is successfully registered."))
-    #  inputs category in database
 
     @link_category.error
     async def link_category_error(self, ctx, err) -> None:
@@ -99,7 +100,8 @@ class CategoriesCog(commands.Cog):
     @commands.guild_only()
     async def create_category(self, ctx, guild_id: int, category_name: str) -> None:
         if not await fetch_guild(self.bot, guild_id):
-            await ctx.send("Unable to fetch guild. Please check if the ID is correct.")
+            await ctx.send(embed=common_embed("Link category",
+                                              "Unable to fetch guild. Please check if the ID is correct."))
             return
 
         category_result = await self.db_conn.fetchrow("SELECT * \
@@ -297,7 +299,7 @@ class CategoriesCog(commands.Cog):
     #  makes sure the category is real and is active
     #  asks confirmation for the request
     #  sets category to inactive
-    @commands.command()
+    @commands.command(aliases=['delete_category'])
     @is_owner()
     @commands.guild_only()
     async def set_inactive(self, ctx, category_id: int) -> None:
@@ -361,15 +363,15 @@ class CategoriesCog(commands.Cog):
             embed = discord.Embed(title=f"Category: {category} ({row[0]})",
                                   description=f"Guild: {guild} ({row[1]})\nEmote: {row[2]}",
                                   color=discord.Color.red(), timestamp=datetime.datetime.now())
-            embed.set_footer(text="Categories")
+            embed.set_footer(text="Active categories")
 
             embeds.append(embed)
 
         await msg.delete()
         await disputils.BotEmbedPaginator(ctx, embeds).run()
 
-    # categories takes no parameters
-    #  gets all active and nonactive modmail categories
+    # categories all takes no parameters
+    #  gets all active and inactive modmail categories
     #  sends result on success, error on failure
     @categories.command()
     @is_owner()
@@ -387,7 +389,7 @@ class CategoriesCog(commands.Cog):
             embed = discord.Embed(title=f"Category: {category} ({row[0]})",
                                   description=f"Guild: {guild} ({row[2]})\nEmote: {row[3]}\nActive: {row[1]}",
                                   color=discord.Color.red(), timestamp=datetime.datetime.now())
-            embed.set_footer(text="Categories")
+            embed.set_footer(text="All categories")
 
             embeds.append(embed)
 

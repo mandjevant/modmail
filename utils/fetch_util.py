@@ -25,3 +25,15 @@ async def fetch_category(bot: discord.Client, channel_id: int, guild_id: int) ->
     if ch is not None:
         return True
     return False
+
+
+# fetch_role takes bot discord.Client, channel_id int and guild_id int
+#  attempts to fetch category
+#  true on success, false on failure
+async def fetch_role(bot: discord.Client, role: int, guild_id: int) -> bool:
+    try:
+        guild = await bot.fetch_guild(guild_id)
+        discord.utils.get(guild.roles, id=role.id)
+        return True
+    except (discord.ext.commands.CommandInvokeError, ValueError, discord.errors.NotFound, discord.errors.Forbidden):
+        return False
