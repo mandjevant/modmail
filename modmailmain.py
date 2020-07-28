@@ -8,7 +8,7 @@ import os
 
 class Bot(commands.Bot):
     def __init__(self, database_conn, event_loop):
-        super().__init__(command_prefix='!', description="Official Floor-Gang modmail bot", loop=event_loop)
+        super().__init__(command_prefix='!', description="Official Floor-Gang modmail bot", loop=event_loop, case_insensitive=True)
         self.db_conn = database_conn
 
         self.load_extension('cogs.modmail')
@@ -17,6 +17,7 @@ class Bot(commands.Bot):
         self.load_extension('cogs.categories')
         self.load_extension('cogs.permissions')
         self.load_extension('cogs.notes')
+        self.load_extension('cogs.standard_replies')
         self.load_extension('tasks.muted_tasks')
 
     @staticmethod

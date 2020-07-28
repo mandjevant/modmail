@@ -31,12 +31,12 @@ class ModmailCog(commands.Cog):
     async def logs(self, ctx):
         await ctx.send("Displaying logs")
 
-    # Standardreply takes reply_id integer
+    # set_standard_reply takes reply_id integer
     #  replies with standard reply
     #  sends reply on success, error on failure
     @commands.command()
     @is_owner()
-    async def standardreply(self, ctx, reply_id: int):
+    async def set_standard_reply(self, ctx, reply_id: int):
         await ctx.send(f"Replying with standard reply {reply_id}")
 
 
