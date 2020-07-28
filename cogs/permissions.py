@@ -45,13 +45,14 @@ class PermissionsCog(commands.Cog):
             category = await self.bot.fetch_channel(results[0])
             if results[3]:
                 await ctx.send(embed=common_embed("Set permissions",
-                                                  f"Role: {results[1]} already has permissions in category {category} ({category_id})."))
+                                                  f"Role: {results[1]} already has permissions in category {category} "
+                                                  f"({category_id})."))
                 return
             else:
                 success = await confirmation(self.bot, ctx, "Set permissions",
-                                             f"{results[1]} ({role.id}) previously had access to {category} ({category_id}) "
-                                             f"but is set to inactive. Do you want to set role {results[1]} to active "
-                                             f"for {category} ({category_id})?",
+                                             f"{results[1]} ({role.id}) previously had access to {category} "
+                                             f"({category_id}) but is set to inactive. Do you want to set role "
+                                             f"{results[1]} to active for {category} ({category_id})?",
                                              "set_permissions")
 
                 if not success:
@@ -111,7 +112,8 @@ class PermissionsCog(commands.Cog):
             category = await self.bot.fetch_channel(row[0])
             role = discord.utils.get(category.guild.roles, id=row[2])
             embed = discord.Embed(title=f"Category: {category} ({row[0]})",
-                                  description=f"Guild: {category.guild} ({category.guild.id})\nRole: {role.mention} ({row[2]})",
+                                  description=f"Guild: {category.guild} ({category.guild.id})\n"
+                                              f"Role: {role.mention} ({row[2]})",
                                   color=discord.Color.red(), timestamp=datetime.datetime.now())
             embed.set_footer(text="Active permissions")
 
@@ -150,10 +152,6 @@ class PermissionsCog(commands.Cog):
     async def permissions_error(self, ctx, err) -> None:
         if isinstance(err, commands.CheckFailure):
             await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help permisisons`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help permissions`.")
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
@@ -188,7 +186,8 @@ class PermissionsCog(commands.Cog):
             category = await self.bot.fetch_channel(row[0])
             role = discord.utils.get(category.guild.roles, id=row[2])
             embed = discord.Embed(title=f"Category: {category} ({row[0]})",
-                                  description=f"Guild: {category.guild} ({category.guild.id})\nRole: {role.mention} ({row[2]})",
+                                  description=f"Guild: {category.guild} ({category.guild.id})\n"
+                                              f"Role: {role.mention} ({row[2]})",
                                   color=discord.Color.red(), timestamp=datetime.datetime.now())
             embed.set_footer(text="Active permissions")
 
@@ -234,12 +233,14 @@ class PermissionsCog(commands.Cog):
             await ctx.send(embed=common_embed("Activate permissions",
                                               f"The permissions for role {results_perm[1]} ({results_perm[2]}) for "
                                               f"category {category} ({category_id}) are already active. "
-                                              f"Did you mean `{self.bot.command_prefix}deactivate_permission {category_id} {role.id}`?"))
+                                              f"Did you mean `{self.bot.command_prefix}deactivate_permission "
+                                              f"{category_id} {role.id}`?"))
             return
 
         success = await confirmation(self.bot, ctx, "Activate permissions",
                                      f"Are you sure you want to activate the permissions for role {results_perm[1]} "
-                                     f"({results_perm[2]}) for category {category} ({category_id})?", "activate_permissions")
+                                     f"({results_perm[2]}) for category {category} ({category_id})?",
+                                     "activate_permissions")
 
         if not success:
             return
@@ -288,7 +289,8 @@ class PermissionsCog(commands.Cog):
             await ctx.send(embed=common_embed("Deactivate permissions",
                                               f"The permissions for role {results_perm[1]} ({results_perm[2]}) for "
                                               f"category {category} ({category_id}) are already inactive. "
-                                              f"Did you mean `{self.bot.command_prefix}activate_permission {category_id} {role.id}`?"))
+                                              f"Did you mean `{self.bot.command_prefix}activate_permission "
+                                              f"{category_id} {role.id}`?"))
             return
 
         success = await confirmation(self.bot, ctx, "Deactivate permissions",

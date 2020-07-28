@@ -194,7 +194,8 @@ class CategoriesCog(commands.Cog):
             return
 
         success = await confirmation(self.bot, ctx, "Update emote",
-                                     f"The current emote for category {category_result[0]} is {category_result[1]} are you sure you want to change it?",
+                                     f"The current emote for category {category_result[0]} is {category_result[1]} " 
+                                     f"are you sure you want to change it?",
                                      "update_emote")
 
         if not success:
@@ -248,32 +249,33 @@ class CategoriesCog(commands.Cog):
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
-    # set_active takes category_id int
+    # category_set_active takes category_id int
     #  makes sure the category is real and is inactive
     #  asks confirmation for the request
     #  sets category to active
     @commands.command()
     @is_owner()
     @commands.guild_only()
-    async def set_active(self, ctx, category_id: int) -> None:
+    async def category_set_active(self, ctx, category_id: int) -> None:
         category_result = await self.db_conn.fetchrow("SELECT category_name, active \
                                                        FROM modmail.categories \
                                                        WHERE \
                                                            category_id=$1", category_id)
 
         if not category_result:
-            await ctx.send(embed=common_embed("Set active",
+            await ctx.send(embed=common_embed("Category set active",
                                               "I do not recognize this category id. Did you make a typo?"))
             return
 
         if category_result[1]:
-            await ctx.send(embed=common_embed("Set active",
+            await ctx.send(embed=common_embed("Category set active",
                                               f"This category with name {category_result[0]} is already active. "
-                                              f"Did you mean `{self.bot.command_prefix}set_inactive {category_id}`?"))
+                                              f"Did you mean `{self.bot.command_prefix}category_set_inactive "
+                                              f"{category_id}`?"))
             return
 
-        success = await confirmation(self.bot, ctx, "Set active",
-                                     f"Are you sure you want to activate {category_result[0]}?", "set_active")
+        success = await confirmation(self.bot, ctx, "Category set active",
+                                     f"Are you sure you want to activate {category_result[0]}?", "category_set_active")
 
         if not success:
             return
@@ -283,44 +285,46 @@ class CategoriesCog(commands.Cog):
                                     WHERE \
                                       category_id=$1", category_id)
 
-    @set_active.error
-    async def set_active_error(self, ctx, err) -> None:
+    @category_set_active.error
+    async def category_set_active_error(self, ctx, err) -> None:
         if isinstance(err, commands.CheckFailure):
             await ctx.send("Sorry, you don't have permission to run this command")
         elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help set_active`.")
+            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help category_set_active`.")
         elif isinstance(err, commands.MissingRequiredArgument):
             await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help set_active`.")
+                f"Missing required argument. Please type `{self.bot.command_prefix}help category_set_active`.")
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
-    # set_inactive takes category_id int
+    # category_set_inactive takes category_id int
     #  makes sure the category is real and is active
     #  asks confirmation for the request
     #  sets category to inactive
     @commands.command(aliases=['delete_category'])
     @is_owner()
     @commands.guild_only()
-    async def set_inactive(self, ctx, category_id: int) -> None:
+    async def category_set_inactive(self, ctx, category_id: int) -> None:
         category_result = await self.db_conn.fetchrow("SELECT category_name, active \
                                                        FROM modmail.categories \
                                                        WHERE \
                                                            category_id=$1", category_id)
 
         if not category_result:
-            await ctx.send(embed=common_embed("Set inactive",
+            await ctx.send(embed=common_embed("Category set inactive",
                                               "I do not recognize this category id. Did you make a typo?"))
             return
 
         if not category_result[1]:
-            await ctx.send(embed=common_embed("Set inactive",
+            await ctx.send(embed=common_embed("Category set inactive",
                                               f"This category with name {category_result[0]} is already inactive. "
-                                              f"Did you mean `{self.bot.command_prefix}set_active {category_id}`?"))
+                                              f"Did you mean `{self.bot.command_prefix}category_set_active "
+                                              f"{category_id}`?"))
             return
 
-        success = await confirmation(self.bot, ctx, "Set inactive",
-                                     f"Are you sure you want to deactivate {category_result[0]}?", "set_inactive")
+        success = await confirmation(self.bot, ctx, "Category set inactive",
+                                     f"Are you sure you want to deactivate {category_result[0]}?",
+                                     "category_set_inactive")
 
         if not success:
             return
@@ -330,15 +334,15 @@ class CategoriesCog(commands.Cog):
                                     WHERE \
                                       category_id=$1", category_id)
 
-    @set_inactive.error
-    async def set_inactive_error(self, ctx, err) -> None:
+    @category_set_inactive.error
+    async def category_set_inactive_error(self, ctx, err) -> None:
         if isinstance(err, commands.CheckFailure):
             await ctx.send("Sorry, you don't have permission to run this command")
         elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help set_inactive`.")
+            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help category_set_inactive`.")
         elif isinstance(err, commands.MissingRequiredArgument):
             await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help set_inactive`.")
+                f"Missing required argument. Please type `{self.bot.command_prefix}help category_set_inactive`.")
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
@@ -400,11 +404,6 @@ class CategoriesCog(commands.Cog):
     async def categories_error(self, ctx, err) -> None:
         if isinstance(err, commands.CheckFailure):
             await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help categories`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help categories`.")
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
@@ -415,7 +414,7 @@ class CategoriesCog(commands.Cog):
     @commands.command()
     @is_owner()
     @commands.guild_only()
-    async def category(self, ctx, category_id: int):
+    async def category(self, ctx, category_id: int) -> None:
         results = await self.db_conn.fetchrow("SELECT * \
                                                FROM modmail.categories \
                                                WHERE \
@@ -462,8 +461,8 @@ class CategoriesCog(commands.Cog):
             return
 
         success = await confirmation(self.bot, ctx, "Update category name",
-                                     f"Are you sure you want to change category with name {category_result[0]} to name {new_name}?",
-                                     "update_category_name")
+                                     f"Are you sure you want to change category with name {category_result[0]} to name "
+                                     f"{new_name}?", "update_category_name")
 
         if not success:
             return
