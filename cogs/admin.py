@@ -21,6 +21,7 @@ class adminCog(commands.Cog):
         self.bot.reload_extension('cogs.categories')
         self.bot.reload_extension('cogs.permissions')
         self.bot.reload_extension('cogs.notes')
+        self.bot.reload_extension('cogs.standard_replies')
         self.bot.reload_extension('tasks.muted_tasks')
 
         await ctx.send(embed=common_embed("Reload cogs", f"{ctx.author.mention}, all cogs have been reloaded."))
