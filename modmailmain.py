@@ -7,9 +7,10 @@ import os
 
 
 class Bot(commands.Bot):
-    def __init__(self, database_conn, event_loop):
+    def __init__(self, database_conn, conf, event_loop):
         super().__init__(command_prefix='!', description="Official Floor-Gang modmail bot", loop=event_loop, case_insensitive=True)
         self.db_conn = database_conn
+        self.conf = conf
 
         self.load_extension('cogs.modmail')
         self.load_extension('cogs.admin')
@@ -19,6 +20,7 @@ class Bot(commands.Bot):
         self.load_extension('cogs.notes')
         self.load_extension('cogs.standard_replies')
         self.load_extension('tasks.muted_tasks')
+        self.load_extension('tasks.verify_categories_tasks')
 
     @staticmethod
     async def on_ready():
@@ -74,7 +76,7 @@ def main():
     if not event_loop.run_until_complete(Database.initiate_database()):
         sys.exit()
 
-    bot = Bot(database_conn=Database.db_conn, event_loop=event_loop)
+    bot = Bot(database_conn=Database.db_conn, conf=Config.conf, event_loop=event_loop)
     bot.run()
 
 

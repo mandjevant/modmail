@@ -1,3 +1,5 @@
+import configparser
+import json
 from discord.ext import commands
 
 
@@ -18,7 +20,9 @@ def exc(func):
 #  returns boolean
 @exc
 def owner_check(ctx) -> bool:
-    owners = [204184798200201216, 586715866129891328, 357918459058978816]
+    config = configparser.ConfigParser()
+    config.read('./conf.ini')
+    owners = json.loads(config.get('global', 'owners'))
 
     return ctx.author.id in owners
 
