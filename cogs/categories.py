@@ -49,14 +49,26 @@ class CategoriesCog(commands.Cog):
                                               "Looks like you waited too long. Please restart the process."))
             return
 
-        category_result = await self.db_conn.fetchrow("SELECT * \
+        category_result = await self.db_conn.fetchrow("SELECT active \
                                                        FROM modmail.categories \
                                                        WHERE \
                                                            category_id=$1", int(category_id))
         if category_result:
-            await ctx.send(embed=common_embed("Link category",
-                                              "This category is already in the database. Please set a different "
-                                              "category."))
+            if category_result[0]:  # Checks if the category is already active and linked to the id provided. The user doesn't have to do anything
+                await ctx.send(embed=common_embed('Link category',
+                                                  "This category is already active and linked to the id provided"))
+            elif not category_result[0]:  # Checks if the category is linked but not active, asks user if it want's to activate that row
+                confirm = await confirmation(self.bot, ctx, 'Link category',
+                                             'The category is already in the database and linked.\n'
+                                             'But not set active, do you wan\'t to set it active?',
+                                             'link_category')
+                if confirm:  # If the request is accepted update the database
+                    await self.db_conn.execute("UPDATE modmail.categories SET active=true WHERE category_id=$1",
+                                               category_id)
+            else:
+                await ctx.send(embed=common_embed("Link category",
+                                                  "This category is already in the database. Please set a different "
+                                                  "category."))
             return
 
         emote_result = await self.db_conn.fetchrow("SELECT * \
@@ -194,7 +206,7 @@ class CategoriesCog(commands.Cog):
             return
 
         success = await confirmation(self.bot, ctx, "Update emote",
-                                     f"The current emote for category {category_result[0]} is {category_result[1]} " 
+                                     f"The current emote for category {category_result[0]} is {category_result[1]} "
                                      f"are you sure you want to change it?",
                                      "update_emote")
 
