@@ -84,7 +84,7 @@ class MutedCog(commands.Cog):
                          VALUES ($1, $2, true)",
                         user.id, ctx.author.id)
         finally:
-            await msg.edit(embed=common_embed("Mute", f"Muted user {user}({user})"))
+            await msg.edit(embed=common_embed("Mute", f"Muted user {user}({user.id})"))
 
     @mute.error
     async def mute_error(self, ctx, err) -> None:

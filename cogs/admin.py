@@ -1,3 +1,5 @@
+import time
+
 from utils.checks import *
 from utils.common_embed import *
 import typing
@@ -23,6 +25,7 @@ class adminCog(commands.Cog):
         self.bot.reload_extension('cogs.notes')
         self.bot.reload_extension('cogs.standard_replies')
         self.bot.reload_extension('tasks.muted_tasks')
+        self.bot.reload_extension('tasks.message_handling')
 
         await ctx.send(embed=common_embed("Reload cogs", f"{ctx.author.mention}, all cogs have been reloaded."))
 
@@ -240,6 +243,17 @@ class adminCog(commands.Cog):
             await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help deny`.")
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
+
+    @commands.command()
+    @is_owner()
+    async def ping(self, ctx):
+        embed = common_embed('', f'Pong! :ping_pong:\n*Bot latency:* {round(self.bot.latency * 1000, 3)}ms')
+        t1 = time.perf_counter()
+        msg = await ctx.send(embed=embed)
+        t2 = time.perf_counter()
+        embed = common_embed('',
+                             f'Pong! :ping_pong:\n*Bot latency:* {round(self.bot.latency * 1000, 3)}ms\n*Actual response time:* {round((t2 - t1) * 1000, 3)}ms')
+        await msg.edit(embed=embed)
 
 
 def setup(bot):

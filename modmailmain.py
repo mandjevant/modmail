@@ -21,6 +21,7 @@ class Bot(commands.Bot):
         self.load_extension('cogs.standard_replies')
         self.load_extension('tasks.muted_tasks')
         self.load_extension('tasks.verify_categories_tasks')
+        self.load_extension('tasks.message_handling')
 
     @staticmethod
     async def on_ready():

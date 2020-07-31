@@ -16,6 +16,7 @@ database = postgres
 
 [global]
 discord_id =
+main_server_id = 
 modmail_commands_channel_id = 
 owners = []
 ```

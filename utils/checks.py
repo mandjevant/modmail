@@ -32,3 +32,14 @@ def is_owner():
         return owner_check(ctx)
 
     return commands.check(wrapper)
+
+
+async def access_check(ctx):
+    print("Check if user has access to this command in the db")
+
+
+def has_access():
+    async def wrapper(ctx):
+        return await access_check(ctx)
+
+    return commands.check(wrapper)
