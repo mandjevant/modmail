@@ -1,5 +1,4 @@
 import datetime
-
 import pytz
 from discord.ext import tasks, commands
 
@@ -16,11 +15,17 @@ class Muted_tasks(commands.Cog):
     #  Sends nothing on success, raises error on failure
     @tasks.loop(minutes=30.0)
     async def check_muted(self) -> None:
-        muted = await self.db_conn.fetch("SELECT user_id, muted_until FROM modmail.muted WHERE active = true")
+        muted = await self.db_conn.fetch("SELECT user_id, muted_until \
+                                          FROM modmail.muted \
+                                          WHERE \
+                                            active = true")
         for row in muted:
             now = datetime.datetime.now(pytz.utc)
             if row[1] < now:
-                await self.db_conn.execute("UPDATE modmail.muted SET active = false WHERE user_id = $1",
+                await self.db_conn.execute("UPDATE modmail.muted \
+                                            SET active = false \
+                                            WHERE \
+                                                user_id = $1",
                                            int(row[0]))
 
     # Waits for the bot to be ready before starting the loop

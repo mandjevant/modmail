@@ -8,7 +8,8 @@ import os
 
 class Bot(commands.Bot):
     def __init__(self, database_conn, conf, event_loop):
-        super().__init__(command_prefix='!', description="Official Floor-Gang modmail bot", loop=event_loop, case_insensitive=True)
+        super().__init__(command_prefix='!', description="Official Floor-Gang modmail bot", loop=event_loop,
+                         case_insensitive=True)
         self.db_conn = database_conn
         self.conf = conf
 

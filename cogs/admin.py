@@ -26,6 +26,7 @@ class adminCog(commands.Cog):
         self.bot.reload_extension('cogs.standard_replies')
         self.bot.reload_extension('tasks.muted_tasks')
         self.bot.reload_extension('tasks.message_handling')
+        self.bot.reload_extension('tasks.verify_categories_tasks')
 
         await ctx.send(embed=common_embed("Reload cogs", f"{ctx.author.mention}, all cogs have been reloaded."))
 
@@ -143,24 +144,6 @@ class adminCog(commands.Cog):
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
-    """
-    # rollback rolls back the transaction
-    #  sends confirmation
-    @commands.command()
-    @is_owner()
-    @commands.guild_only()
-    async def rollback(self, ctx) -> None:
-        self.db_conn.rollback()
-        await ctx.send(embed=common_embed("Rollback", "Rolled back."))
-
-    @rollback.error
-    async def rollback_error(self, ctx, err):
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-    """
-
     # purge takes optional parameter n int
     #  deletes past n messages
     #  sends confirmation
@@ -246,14 +229,22 @@ class adminCog(commands.Cog):
 
     @commands.command()
     @is_owner()
+    @commands.guild_only()
     async def ping(self, ctx):
-        embed = common_embed('', f'Pong! :ping_pong:\n*Bot latency:* {round(self.bot.latency * 1000, 3)}ms')
+        embed = common_embed("", f"Pong! :ping_pong:\n*Bot latency:* {round(self.bot.latency * 1000, 3)}ms")
         t1 = time.perf_counter()
         msg = await ctx.send(embed=embed)
         t2 = time.perf_counter()
-        embed = common_embed('',
-                             f'Pong! :ping_pong:\n*Bot latency:* {round(self.bot.latency * 1000, 3)}ms\n*Actual response time:* {round((t2 - t1) * 1000, 3)}ms')
+        embed = common_embed("", f"Pong! :ping_pong:\n*Bot latency:* {round(self.bot.latency * 1000, 3)}ms\n"
+                                 f"*Actual response time:* {round((t2 - t1) * 1000, 3)}ms")
         await msg.edit(embed=embed)
+
+    @ping.error
+    async def ping_error(self, ctx, err) -> None:
+        if isinstance(err, commands.CheckFailure):
+            await ctx.send("Sorry, you do not have permission to use this command.")
+        else:
+            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
 
 def setup(bot):

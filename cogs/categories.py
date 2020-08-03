@@ -17,7 +17,7 @@ class CategoriesCog(commands.Cog):
     #  asks the user to react with an emoji
     #  checks if category and emoji not in database yet
     @commands.command(pass_context=True)
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def link_category(self, ctx, category_id: int, guild_id: int) -> None:
         if not await fetch_guild(self.bot, guild_id):
@@ -54,16 +54,19 @@ class CategoriesCog(commands.Cog):
                                                        WHERE \
                                                            category_id=$1", int(category_id))
         if category_result:
-            if category_result[0]:  # Checks if the category is already active and linked to the id provided. The user doesn't have to do anything
+            if category_result[0]:
                 await ctx.send(embed=common_embed('Link category',
                                                   "This category is already active and linked to the id provided"))
-            elif not category_result[0]:  # Checks if the category is linked but not active, asks user if it want's to activate that row
+            elif not category_result[0]:
                 confirm = await confirmation(self.bot, ctx, 'Link category',
                                              'The category is already in the database and linked.\n'
                                              'But not set active, do you wan\'t to set it active?',
                                              'link_category')
                 if confirm:  # If the request is accepted update the database
-                    await self.db_conn.execute("UPDATE modmail.categories SET active=true WHERE category_id=$1",
+                    await self.db_conn.execute("UPDATE modmail.categories \
+                                                SET active=true \
+                                                WHERE \
+                                                    category_id=$1",
                                                category_id)
             else:
                 await ctx.send(embed=common_embed("Link category",
@@ -108,7 +111,7 @@ class CategoriesCog(commands.Cog):
     #  checks if emoji is not in database yet
     #  creates category and inputs category in database
     @commands.command(pass_context=True)
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def create_category(self, ctx, guild_id: int, category_name: str) -> None:
         if not await fetch_guild(self.bot, guild_id):
@@ -158,6 +161,8 @@ class CategoriesCog(commands.Cog):
 
         try:
             category = await ctx.guild.create_category(category_name)
+            await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False,
+                                           read_message_history=False)
         except (discord.ext.commands.MissingPermissions, discord.errors.Forbidden):
             ctx.send(embed=common_embed("Create category",
                                         "Oof, I'm missing permissions. Please add them and try again."))
@@ -192,7 +197,7 @@ class CategoriesCog(commands.Cog):
     #  checks if emoji not in database yet
     #  updates emote in database
     @commands.command(pass_context=True)
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def update_emote(self, ctx, category_id: int) -> None:
         category_result = await self.db_conn.fetchrow("SELECT category_name, emote_id \
@@ -266,7 +271,7 @@ class CategoriesCog(commands.Cog):
     #  asks confirmation for the request
     #  sets category to active
     @commands.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def category_set_active(self, ctx, category_id: int) -> None:
         category_result = await self.db_conn.fetchrow("SELECT category_name, active \
@@ -314,7 +319,7 @@ class CategoriesCog(commands.Cog):
     #  asks confirmation for the request
     #  sets category to inactive
     @commands.command(aliases=['delete_category'])
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def category_set_inactive(self, ctx, category_id: int) -> None:
         category_result = await self.db_conn.fetchrow("SELECT category_name, active \
@@ -362,7 +367,7 @@ class CategoriesCog(commands.Cog):
     #  gets all active modmail categories
     #  sends result on success, error on failure
     @commands.group(invoke_without_command=True)
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def categories(self, ctx) -> None:
         msg = await ctx.send(embed=common_embed("Categories", "Retrieving active categories."))
@@ -390,7 +395,7 @@ class CategoriesCog(commands.Cog):
     #  gets all active and inactive modmail categories
     #  sends result on success, error on failure
     @categories.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def all(self, ctx):
         msg = await ctx.send(embed=common_embed("Categories", "Retrieving all categories."))
@@ -424,7 +429,7 @@ class CategoriesCog(commands.Cog):
     #  gets information about the category
     #  sends result on success, error on failure
     @commands.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def category(self, ctx, category_id: int) -> None:
         results = await self.db_conn.fetchrow("SELECT * \
@@ -459,7 +464,7 @@ class CategoriesCog(commands.Cog):
     #  updates category
     #  sends result on success, error on failure
     @commands.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def update_category_name(self, ctx, category_id: int, new_name: str) -> None:
         category_result = await self.db_conn.fetchrow("SELECT category_name, emote_id \

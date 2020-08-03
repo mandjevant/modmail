@@ -39,7 +39,7 @@ class MutedCog(commands.Cog):
     #  mutes discord user from modmail
     #  sends confirmation on success, error on failure
     @commands.command()
-    @is_owner()
+    @has_access()
     @commands.guild_only()
     async def mute(self, ctx, user: typing.Union[discord.Member, str], end_time: typing.Optional[str] = None) -> None:
         if isinstance(user, str):
@@ -55,7 +55,10 @@ class MutedCog(commands.Cog):
 
         try:
             msg = await ctx.send(embed=common_embed("Mute", f"Muting user {user.name}..."))
-            db_user = await self.db_conn.fetch("SELECT * FROM modmail.muted WHERE user_id = $1", user.id)
+            db_user = await self.db_conn.fetch("SELECT * \
+                                                FROM modmail.muted \
+                                                WHERE \
+                                                    user_id = $1", user.id)
 
             if end_time:
                 time_class = Time()
@@ -64,27 +67,28 @@ class MutedCog(commands.Cog):
                     await self.db_conn.execute("UPDATE modmail.muted \
                                                 SET active = true, muted_by = $1, muted_until = $2 \
                                                 WHERE \
-                                                  user_id = $3",
+                                                   user_id = $3",
                                                ctx.author.id, time, user.id)
                 else:
-                    await self.db_conn.execute(
-                        "INSERT INTO modmail.muted (user_id, muted_by, muted_until, active) \
-                         VALUES ($1, $2, $3, true)",
-                        user.id, ctx.author.id, time)
+                    await self.db_conn.execute("INSERT INTO modmail.muted (user_id, muted_by, muted_until, active) \
+                                                VALUES ($1, $2, $3, true)",
+                                               user.id, ctx.author.id, time)
             else:
                 if db_user:
                     await self.db_conn.execute("UPDATE modmail.muted \
                                                 SET active = true, muted_by = $1 \
                                                 WHERE \
-                                                  user_id = $2",
+                                                   user_id = $2",
                                                ctx.author.id, user.id)
                 else:
-                    await self.db_conn.execute(
-                        "INSERT INTO modmail.muted (user_id, muted_by, active) \
-                         VALUES ($1, $2, true)",
-                        user.id, ctx.author.id)
+                    await self.db_conn.execute("INSERT INTO modmail.muted (user_id, muted_by, active) \
+                                                VALUES ($1, $2, true)",
+                                               user.id, ctx.author.id)
         finally:
             await msg.edit(embed=common_embed("Mute", f"Muted user {user}({user.id})"))
+            await user.send(embed=common_embed("Muted", f"Hey there, due to misuse of our modmail bot, you were muted "
+                                                        f"for {end_time}. Any messages you send here will not be "
+                                                        f"received by the moderator team."))
 
     @mute.error
     async def mute_error(self, ctx, err) -> None:
@@ -101,7 +105,7 @@ class MutedCog(commands.Cog):
     #  unmutes discord user from modmail
     #  sends confirmation on success, error on failure
     @commands.command()
-    @is_owner()
+    @has_access()
     @commands.guild_only()
     async def unmute(self, ctx, user: typing.Union[discord.Member, str]) -> None:
         if isinstance(user, str):
@@ -140,7 +144,7 @@ class MutedCog(commands.Cog):
     #  Gets all active muted users from modmail
     #  Sends results on success, error on failure
     @commands.group(invoke_without_command=True)
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def muted(self, ctx) -> None:
         msg = await ctx.send(embed=common_embed("Muted", "Getting all active users..."))
@@ -170,7 +174,7 @@ class MutedCog(commands.Cog):
     #  Gets all muted users from modmail
     #  Sends results on success, error on failure
     @muted.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def all(self, ctx):
         msg = await ctx.send(embed=common_embed("Muted all", "Getting all users..."))
@@ -206,7 +210,7 @@ class MutedCog(commands.Cog):
     #  Checks if user is muted
     #  Returns results on success, error on failure
     @commands.command()
-    @is_owner()
+    @has_access()
     @commands.guild_only()
     async def is_muted(self, ctx, user: typing.Union[discord.Member, str]) -> None:
         if isinstance(user, str):
@@ -217,11 +221,10 @@ class MutedCog(commands.Cog):
                                                   "Unable to locate user, please check if the id is correct"))
                 return
 
-        result = await self.db_conn.fetchrow(
-            "SELECT active, muted_by, muted_at, muted_until \
-             FROM modmail.muted \
-             WHERE \
-               user_id = $1", user.id)
+        result = await self.db_conn.fetchrow("SELECT active, muted_by, muted_at, muted_until \
+                                              FROM modmail.muted \
+                                              WHERE \
+                                                user_id = $1", user.id)
 
         if result:
             muted_by = await self.bot.fetch_user(result[1])

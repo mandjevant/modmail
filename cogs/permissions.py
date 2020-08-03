@@ -18,7 +18,7 @@ class PermissionsCog(commands.Cog):
     #  checks if permission exists but is inactive => confirmation to activate
     #  if neither, asks for confirmation and adds the permission
     @commands.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def set_permissions(self, ctx, category_id: int, role: typing.Union[discord.Role, int]) -> None:
         results_cat = await self.db_conn.fetchrow("SELECT * \
@@ -97,7 +97,7 @@ class PermissionsCog(commands.Cog):
     #  gets all active permissions
     #  sends result on success, error on failure
     @commands.group(invoke_without_command=True)
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def permissions(self, ctx) -> None:
         msg = await ctx.send(embed=common_embed("Permissions", "Retrieving active permissions."))
@@ -126,7 +126,7 @@ class PermissionsCog(commands.Cog):
     #  gets all active and inactive permissions
     #  sends result on success, error on failure
     @permissions.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def all(self, ctx) -> None:
         msg = await ctx.send(embed=common_embed("Permissions", "Retrieving all permissions."))
@@ -159,7 +159,7 @@ class PermissionsCog(commands.Cog):
     #  gets all active permissions for this category
     #  sends result on success, error on failure
     @commands.command()
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def category_permissions(self, ctx, category_id: int) -> None:
         category_result = await self.db_conn.fetchrow("SELECT * \
@@ -213,7 +213,7 @@ class PermissionsCog(commands.Cog):
     #  makes sure category is real and inactive
     #  asks confirmation and updates the database
     @commands.command(aliases=['activate_permissions'])
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def activate_permission(self, ctx, category_id: int, role: typing.Union[discord.Role, int]) -> None:
         results_perm = await self.db_conn.fetchrow("SELECT * \
@@ -269,7 +269,7 @@ class PermissionsCog(commands.Cog):
     #  makes sure category is real and active
     #  asks confirmation and updates the database
     @commands.command(aliases=['delete_permissions', 'remove_permissions', 'deactivate_permissions'])
-    @is_owner()
+    @is_admin()
     @commands.guild_only()
     async def deactivate_permission(self, ctx, category_id: int, role: typing.Union[discord.Role, int]) -> None:
         results_perm = await self.db_conn.fetchrow("SELECT * \
