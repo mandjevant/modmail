@@ -51,7 +51,7 @@ async def admin_check(ctx) -> bool:
     config = configparser.ConfigParser()
     config.read('./conf.ini')
 
-    return config.get('global', 'admin_role_id') in [role.id for role in ctx.author.roles]
+    return int(config.get('global', 'admin_role_id')) in [role.id for role in ctx.author.roles]
 
 
 # bot_commands_ch_check takes context
@@ -62,7 +62,7 @@ async def bot_commands_ch_check(ctx) -> bool:
     config = configparser.ConfigParser()
     config.read('./conf.ini')
 
-    return ctx.channel.id is int(config.get('global', 'modmail_commands_channel_id'))
+    return int(ctx.channel.id) == int(config.get('global', 'modmail_commands_channel_id'))
 
 
 def is_owner():

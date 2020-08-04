@@ -86,7 +86,7 @@ class MutedCog(commands.Cog):
                                                user.id, ctx.author.id)
         finally:
             await msg.edit(embed=common_embed("Mute", f"Muted user {user}({user.id})"))
-            await user.send(embed=common_embed("Muted", f"Hey there, due to misuse of our modmail bot, you were muted "
+            await user.send(embed=common_embed("Muted", f"Due to misuse of our modmail bot, you were muted "
                                                         f"for {end_time}. Any messages you send here will not be "
                                                         f"received by the moderator team."))
 

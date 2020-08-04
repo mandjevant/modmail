@@ -101,6 +101,7 @@ class messageHandlingTasks(commands.Cog):
 
                 channel = await guild.create_text_channel(f"{message.author.name}-{message.author.discriminator}",
                                                           category=category)
+                await channel.edit(topic=f"{message.author.id}")
 
                 past_threads = await self.db_conn.fetch("SELECT * \
                                                          FROM modmail.conversations \
@@ -114,7 +115,7 @@ class messageHandlingTasks(commands.Cog):
                 created_ago = datetime.datetime.now() - user.created_at
                 joined_ago = datetime.datetime.now() - user.joined_at
 
-                chnl_embed = common_embed("",
+                chnl_embed = common_embed(f"{user.id}",
                                           f"{user.mention} was created {created_ago.days} days ago, "
                                           f"joined {joined_ago.days} days ago"
                                           f" with **{'no' if len(past_threads) == 0 else len(past_threads)}** past threads",

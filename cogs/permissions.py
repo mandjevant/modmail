@@ -21,6 +21,9 @@ class PermissionsCog(commands.Cog):
     @is_admin()
     @commands.guild_only()
     async def set_permissions(self, ctx, category_id: int, role: typing.Union[discord.Role, int]) -> None:
+        if isinstance(role, discord.Role):
+            role = role.id
+
         results_cat = await self.db_conn.fetchrow("SELECT * \
                                                    FROM modmail.categories \
                                                    WHERE \
@@ -32,7 +35,7 @@ class PermissionsCog(commands.Cog):
             return
 
         if not await fetch_role(self.bot, role, results_cat[3]):
-            await ctx.send(embed=common_embed("Set permissions", f"Could not find role with role id {role.id}"))
+            await ctx.send(embed=common_embed("Set permissions", f"Could not find role with role id {role}"))
 
             return
 
@@ -40,7 +43,7 @@ class PermissionsCog(commands.Cog):
                                                FROM modmail.permissions \
                                                WHERE \
                                                   category_id=$1 AND \
-                                                  role_id=$2 ", category_id, role.id)
+                                                  role_id=$2 ", category_id, role)
         if results:
             category = await self.bot.fetch_channel(results[0])
             if results[3]:
@@ -50,7 +53,7 @@ class PermissionsCog(commands.Cog):
                 return
             else:
                 success = await confirmation(self.bot, ctx, "Set permissions",
-                                             f"{results[1]} ({role.id}) previously had access to {category} "
+                                             f"{results[1]} ({int(role)}) previously had access to {category} "
                                              f"({category_id}) but is set to inactive. Do you want to set role "
                                              f"{results[1]} to active for {category} ({category_id})?",
                                              "set_permissions")
@@ -68,7 +71,7 @@ class PermissionsCog(commands.Cog):
         category = await self.bot.fetch_channel(category_id)
 
         success = await confirmation(self.bot, ctx, "Set permissions",
-                                     f"Are you sure you want to give role {role.name} ({role.id}) to active for "
+                                     f"Are you sure you want to give role {role.name} ({role.id}) permissions for "
                                      f"{category} ({category_id})?",
                                      "set_permissions")
 
@@ -216,15 +219,18 @@ class PermissionsCog(commands.Cog):
     @is_admin()
     @commands.guild_only()
     async def activate_permission(self, ctx, category_id: int, role: typing.Union[discord.Role, int]) -> None:
+        if isinstance(role, discord.Role):
+            role = role.id
+
         results_perm = await self.db_conn.fetchrow("SELECT * \
                                                     FROM modmail.permissions \
                                                     WHERE \
                                                        category_id=$1 AND \
-                                                       role_id=$2", category_id, role.id)
+                                                       role_id=$2", category_id, role)
         if not results_perm:
             await ctx.send(embed=common_embed("Activate permissions",
                                               f"Did not find active permissions for category with category id "
-                                              f"{category_id} and role with role id {role.id}."))
+                                              f"{category_id} and role with role id {role}."))
             return
 
         category = await self.bot.fetch_channel(category_id)
@@ -234,7 +240,7 @@ class PermissionsCog(commands.Cog):
                                               f"The permissions for role {results_perm[1]} ({results_perm[2]}) for "
                                               f"category {category} ({category_id}) are already active. "
                                               f"Did you mean `{self.bot.command_prefix}deactivate_permission "
-                                              f"{category_id} {role.id}`?"))
+                                              f"{category_id} {role}`?"))
             return
 
         success = await confirmation(self.bot, ctx, "Activate permissions",
@@ -272,15 +278,18 @@ class PermissionsCog(commands.Cog):
     @is_admin()
     @commands.guild_only()
     async def deactivate_permission(self, ctx, category_id: int, role: typing.Union[discord.Role, int]) -> None:
+        if isinstance(role, discord.Role):
+            role = role.id
+
         results_perm = await self.db_conn.fetchrow("SELECT * \
                                                     FROM modmail.permissions \
                                                     WHERE \
                                                        category_id=$1 AND \
-                                                       role_id=$2", category_id, role.id)
+                                                       role_id=$2", category_id, role)
         if not results_perm:
             await ctx.send(embed=common_embed("Deactivate permissions",
                                               "Did not find active permissions for category with category id "
-                                              f"{category_id} and role with role id {role.id}."))
+                                              f"{category_id} and role with role id {role}."))
             return
 
         category = await self.bot.fetch_channel(category_id)
@@ -290,7 +299,7 @@ class PermissionsCog(commands.Cog):
                                               f"The permissions for role {results_perm[1]} ({results_perm[2]}) for "
                                               f"category {category} ({category_id}) are already inactive. "
                                               f"Did you mean `{self.bot.command_prefix}activate_permission "
-                                              f"{category_id} {role.id}`?"))
+                                              f"{category_id} {role}`?"))
             return
 
         success = await confirmation(self.bot, ctx, "Deactivate permissions",
