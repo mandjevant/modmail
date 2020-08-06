@@ -109,20 +109,30 @@ class messageHandlingTasks(commands.Cog):
                                                             user_id=$1 AND \
                                                             active=false",
                                                         message.author.id)
+                check = False
+                if int(guild.id) == int(self.bot.conf.get('global', 'main_server_id')):
+                    check = True
 
-                user = guild.get_member(message.author.id)
+                if check:
+                    user = guild.get_member(message.author.id)
+                    created_ago = datetime.datetime.now() - user.created_at
+                    joined_ago = datetime.datetime.now() - user.joined_at
+                    chnl_embed_msg = f"{user.mention} was created {created_ago.days} days ago, "\
+                                     f"joined {joined_ago.days} days ago"
+                else:
+                    user = message.author
+                    created_ago = datetime.datetime.now() - user.created_at
+                    chnl_embed_msg = f"{user.mention} was created {created_ago.days} days ago, "
 
-                created_ago = datetime.datetime.now() - user.created_at
-                joined_ago = datetime.datetime.now() - user.joined_at
+                chnl_embed_msg += f" with **{'no' if len(past_threads) == 0 else len(past_threads)}** past threads"
 
-                chnl_embed = common_embed(f"{user.id}",
-                                          f"{user.mention} was created {created_ago.days} days ago, "
-                                          f"joined {joined_ago.days} days ago"
-                                          f" with **{'no' if len(past_threads) == 0 else len(past_threads)}** past threads",
-                                          color=0x7289da)
-
+                chnl_embed = common_embed(f"{message.author.id}", chnl_embed_msg, color=0x7289da)
                 chnl_embed.set_author(name=str(user), icon_url=user.avatar_url)
-                roles = " ".join([role.mention for role in user.roles if not role.is_default()])
+
+                if check:
+                    roles = " ".join([role.mention for role in user.roles if not role.is_default()])
+                else:
+                    roles = ""
                 chnl_embed.add_field(name="Roles", value=roles if roles else "No Roles")
                 await channel.send(embed=chnl_embed)
 
@@ -193,6 +203,13 @@ class messageHandlingTasks(commands.Cog):
                                              made_by_mod) \
                                             VALUES ($1, $2, $3, $4, $5, false)",
                                            message.id, message.content, message.author.id, conv[0], thread_msg.id)
+
+            if message.attachments:
+                attachment_object = await message.attachments[0].read()
+                await self.db_conn.execute("UPDATE modmail.messages \
+                                            SET attachment=$1 \
+                                            WHERE \
+                                                message_id=$2", attachment_object, message.id)
 
     # Listens for deleted messages
     #   If user deletes message => edits message in conversation to show it was deleted
