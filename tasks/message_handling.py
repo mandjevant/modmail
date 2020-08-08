@@ -114,12 +114,16 @@ class messageHandlingTasks(commands.Cog):
                     check = True
 
                 if check:
-                    user = guild.get_member(message.author.id)
-                    created_ago = datetime.datetime.now() - user.created_at
-                    joined_ago = datetime.datetime.now() - user.joined_at
-                    chnl_embed_msg = f"{user.mention} was created {created_ago.days} days ago, "\
-                                     f"joined {joined_ago.days} days ago"
-                else:
+                    try:
+                        user = guild.get_member(message.author.id)
+                        created_ago = datetime.datetime.now() - user.created_at
+                        joined_ago = datetime.datetime.now() - user.joined_at
+                        chnl_embed_msg = f"{user.mention} was created {created_ago.days} days ago, "\
+                                         f"joined {joined_ago.days} days ago"
+                    except AttributeError:
+                        check = False
+
+                if not check:
                     user = message.author
                     created_ago = datetime.datetime.now() - user.created_at
                     chnl_embed_msg = f"{user.mention} was created {created_ago.days} days ago, "
