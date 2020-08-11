@@ -12,7 +12,7 @@ green = 0x7CFC00
 #  else replies to user
 #  returns nothing on success, error on failure
 async def reply(bot: commands.Bot, ctx: commands.Context, db_conn: asyncpg.pool.Pool, user_id: int, message: str,
-                conv_id: int, anon: bool = False) -> None:
+                conv_id: int, anon: bool = False, attachments: list = {}) -> None:
     user = bot.get_user(user_id)
 
     usr_embed = common_embed("", message, color=yellow)
@@ -21,11 +21,19 @@ async def reply(bot: commands.Bot, ctx: commands.Context, db_conn: asyncpg.pool.
     else:
         usr_embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
         usr_embed.set_footer(text=ctx.author.roles[-1].name)
+
+    if attachments:
+        usr_embed.add_field(name=f"File upload ({len(attachments)})",
+                            value='\n'.join([f"[{attachment.filename}]({attachment.url})" for attachment in attachments]))
+
     usr_msg = await user.send(embed=usr_embed)
 
     thread_embed = common_embed("", message, color=green)
     thread_embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
     thread_embed.set_footer(text=ctx.author.roles[-1].name if not anon else "anonymous reply")
+    if attachments:
+        thread_embed.add_field(name=f"File upload ({len(attachments)})",
+                            value='\n'.join([f"[{attachment.filename}]({attachment.url})" for attachment in attachments]))
     mod_msg = await ctx.send(embed=thread_embed)
 
     await db_conn.execute("INSERT INTO modmail.messages \

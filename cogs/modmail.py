@@ -22,8 +22,11 @@ class ModmailCog(commands.Cog):
     @commands.command(aliases=['r'])
     @commands.guild_only()
     @has_access()
-    async def reply(self, ctx, *, message: str) -> None:
-        if len(message) > 2048:
+    async def reply(self, ctx, *, message: typing.Optional[str]) -> None:
+        if message is None and not ctx.message.attachments:
+            raise commands.MissingRequiredArgument
+
+        if message is not None and (len(message) > 2048):
             await ctx.send(embed=common_embed("Modmail Reply",
                                               "Sorry this message is over 2048 characters, please reduce the "
                                               "character count"))
@@ -41,7 +44,7 @@ class ModmailCog(commands.Cog):
                                               f"look at `{ctx.prefix}help create`"))
             return
 
-        await reply(self.bot, ctx, self.db_conn, conv[1], message, conv[0])
+        await reply(self.bot, ctx, self.db_conn, conv[1], f'{message} \n', conv[0], attachments=ctx.message.attachments)
 
     @reply.error
     async def reply_error(self, ctx, err: any) -> None:
@@ -60,8 +63,11 @@ class ModmailCog(commands.Cog):
     @commands.command(aliases=['ar'])
     @has_access()
     @commands.guild_only()
-    async def anonymous_reply(self, ctx, *, message: str) -> None:
-        if len(message) > 2048:
+    async def anonymous_reply(self, ctx, *, message: typing.Optional[str]) -> None:
+        if message is None and not ctx.message.attachments:
+            raise commands.MissingRequiredArgument
+
+        if message is not None and (len(message) > 2048):
             await ctx.send(embed=common_embed("Modmail Reply",
                                               "Sorry this message is over 2048 characters, please reduce the "
                                               "character count"))
@@ -80,7 +86,8 @@ class ModmailCog(commands.Cog):
                                               f"look at `{ctx.prefix}help create`"))
             return
 
-        await reply(self.bot, ctx, self.db_conn, conv[1], message, conv[0], anon=True)
+        await reply(self.bot, ctx, self.db_conn, conv[1], message, conv[0], anon=True,
+                    attachments=ctx.message.attachments)
 
     @anonymous_reply.error
     async def anonymous_reply_error(self, ctx, err: any) -> None:
@@ -417,7 +424,7 @@ class ModmailCog(commands.Cog):
                                                   FROM modmail.categories \
                                                   WHERE \
                                                     lower(category_name) = lower($1)",
-                category)
+                                                 category)
             if not cat_db:
                 await ctx.send(embed=common_embed("Create conversation",
                                                   "Unable to fetch that category please check spelling or use the id"))
@@ -499,7 +506,7 @@ class ModmailCog(commands.Cog):
     @commands.command()
     @has_access()
     @commands.guild_only()
-    async def logs(self, ctx: commands.Context, user: typing.Optional[typing.Union[discord.Member, int]]):
+    async def logs(self, ctx: commands.Context, user: typing.Optional[typing.Union[discord.Member, int]]) -> None:
         if user is None:
             result = await self.db_conn.fetchrow("SELECT user_id \
                                                   FROM modmail.conversations \

@@ -11,7 +11,7 @@ class standardRepliesCog(commands.Cog):
         self.yellow = 0xE8D90C
         self.green = 0x7CFC00
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @has_access()
     @commands.guild_only()
     async def standard_reply(self, ctx, reply_id: int) -> None:
@@ -49,6 +49,33 @@ class standardRepliesCog(commands.Cog):
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
             raise err
+
+    @standard_reply.command(name='anonymous', aliases=['anon'])
+    @has_access()
+    @commands.guild_only()
+    async def standard_reply_anonymous(self, ctx, reply_id: int) -> None:
+        reply_db = await self.db_conn.fetchrow("SELECT standard_reply \
+                                                FROM modmail.standardreplies \
+                                                WHERE \
+                                                    reply_id=$1 AND \
+                                                    active=TRUE",
+                                               reply_id)
+        conversation = await self.db_conn.fetchrow("SELECT conversation_id, user_id \
+                                                    FROM modmail.conversations \
+                                                    WHERE \
+                                                        channel_id = $1", ctx.channel.id)
+
+        if not reply_db:
+            await ctx.send(embed=common_embed("Standard reply",
+                                              f"I could not find a reply with reply ID {reply_id}. Please start over."))
+            return
+
+        check = await confirmation(self.bot, ctx, "Standard reply",
+                                   f"Are you sure you want to reply with `{reply_db[0]}`?", "standard_reply")
+        if not check:
+            return
+
+        await reply(self.bot, ctx, self.db_conn, conversation[1], reply_db[0], conversation[0], anon=True)
 
     # Standard_reply takes standard_reply_id int.
     #   Retrieves standard reply info from database.
@@ -106,10 +133,10 @@ class standardRepliesCog(commands.Cog):
                                       f"Description \"{description.content}\"",
                                       "create_standard_reply")
             if conf:
-                await self.db_conn.execute("INSERT INTO modmail.standardreplies \
+                reply_id = await self.db_conn.fetchval("INSERT INTO modmail.standardreplies \
                                             (standard_reply, made_by_id, active, description) \
-                                            VALUES ($1, $2, true, $3)",
-                                           reply.content, ctx.author.id, description.content)
+                                            VALUES ($1, $2, true, $3) RETURNING reply_id",
+                                                 reply.content, ctx.author.id, description.content)
 
         except asyncio.TimeoutError:
             await ctx.send(embed=common_embed("Standard Reply",
@@ -117,7 +144,7 @@ class standardRepliesCog(commands.Cog):
                                               f"`{ctx.prefix}create_standard_reply`"))
         else:
             await ctx.send(embed=common_embed("Standard Reply",
-                                              f"Successfully inserted the new standard reply"))
+                                              f"Successfully inserted the new standard reply with the id: **{reply_id}**"))
 
     @create_standard_reply.error
     async def create_standard_reply_error(self, ctx, err: any) -> None:
@@ -302,7 +329,7 @@ class standardRepliesCog(commands.Cog):
                 await ctx.send(embed=common_embed("Standard Reply",
                                                   f"The standard reply with that id doesn't exist, "
                                                   f"please check if it is correct or create it with "
-                                                  f"`{ctx.prefix}create_standard_reply`"))
+                                                  f"`{ctx.prefix}edit_standard_reply`"))
                 return
 
             await ctx.send(embed=common_embed("Standard Reply", "Please enter the desired reply..."))
@@ -315,7 +342,7 @@ class standardRepliesCog(commands.Cog):
                                       f"**Is this correct?**\n\n"
                                       f"Reply: '{reply.content}'\n\n"
                                       f"Description '{description.content}'",
-                                      "create_standard_reply")
+                                      "edit_standard_reply")
             if conf and check:
                 await self.db_conn.execute("UPDATE modmail.standardreplies \
                                             SET standard_reply=$1, description=$2 \
@@ -325,7 +352,7 @@ class standardRepliesCog(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.send(embed=common_embed("Standard Reply",
                                               f"You didn't reply within the time limit, please restart with "
-                                              f"`{ctx.prefix}create_standard_reply`"))
+                                              f"`{ctx.prefix}edit_standard_reply`"))
         else:
             await ctx.send(embed=common_embed("Standard Reply",
                                               f"Successfully updated the standard reply with id: {standard_reply_id}"))

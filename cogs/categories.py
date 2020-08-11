@@ -159,9 +159,10 @@ class CategoriesCog(commands.Cog):
                                               "emoji."))
             return
 
+        guild = await self.bot.fetch_guild(guild_id)
         try:
-            category = await ctx.guild.create_category(category_name)
-            await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False,
+            category = await guild.create_category(category_name)
+            await category.set_permissions(guild.default_role, read_messages=False, send_messages=False,
                                            read_message_history=False)
         except (discord.ext.commands.MissingPermissions, discord.errors.Forbidden):
             await ctx.send(embed=common_embed("Create category",

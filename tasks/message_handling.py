@@ -68,6 +68,7 @@ class messageHandlingTasks(commands.Cog):
         self.db_conn = bot.db_conn
         self.yellow = 0xE8D90C
         self.green = 0x7CFC00
+        self.red = 0xe50000
 
     # Listens for user private messages
     #  if not in a conversation creates conversation => asks for desired category with emotes
@@ -168,7 +169,7 @@ class messageHandlingTasks(commands.Cog):
                                            thread_msg.id)
 
                 usr_embed = common_embed("Message send",
-                                         f"'{message.content}'\n\n *if this isn't correct you can change it with "
+                                         f"> {message.content} \n\n *if this isn't correct you can change it with "
                                          f"{self.bot.command_prefix}edit*",
                                          color=self.green)
                 usr_embed.set_author(name=message.author, icon_url=message.author.avatar_url)
@@ -193,7 +194,7 @@ class messageHandlingTasks(commands.Cog):
                 thread_msg = await channel.send(embed=thread_embed)
 
                 usr_embed = common_embed("Message send",
-                                         f"'{message.content}'\n\n *if this isn't correct you can change it with "
+                                         f"> {message.content}\n\n *if this isn't correct you can change it with "
                                          f"{self.bot.command_prefix}edit*",
                                          color=self.green)
                 usr_embed.set_author(name=message.author, icon_url=message.author.avatar_url)
@@ -222,7 +223,7 @@ class messageHandlingTasks(commands.Cog):
     @commands.Cog.listener(name="on_message_delete")
     async def dm_delete_listener(self, message: discord.Message) -> None:
         if message.guild is None:
-            conv = await self.db_conn.fetchrow("SELECT conversation_id, channel_id \
+            conv = await self.db_conn.fetchrow("SELECT conversation_id, channel_id, message_id \
                                                 FROM modmail.conversations \
                                                 WHERE \
                                                     user_id=$1 AND \
@@ -239,11 +240,21 @@ class messageHandlingTasks(commands.Cog):
                 thread_channel = await self.bot.fetch_channel(conv[1])
                 thread_msg = await thread_channel.fetch_message(db_msg[0])
 
-                thread_embed = common_embed("", db_msg[1], color=self.yellow)
+                thread_embed = common_embed("", db_msg[1], color=self.red)
                 thread_embed.set_author(name=message.author, icon_url=message.author.avatar_url)
                 thread_embed.set_footer(text=f"Message ID: {message.id} (deleted)")
 
                 await thread_msg.edit(embed=thread_embed)
+
+                usr_msg = await message.author.dm_channel.fetch_message(conv[2])
+                usr_embed = common_embed("Message deleted",
+                                         f"> {message.content}",
+                                         color=self.red)
+
+                usr_embed.set_author(name=message.author, icon_url=message.author.avatar_url)
+                usr_embed.set_footer(text=f"Message ID: {message.id}")
+
+                await usr_msg.edit(embed=usr_embed)
                 await self.db_conn.execute("UPDATE modmail.messages \
                                             SET deleted=true \
                                             WHERE \

@@ -67,7 +67,7 @@ class PermissionsCog(commands.Cog):
                                               category_id=$1", category_id)
 
         guild = await self.bot.fetch_guild(results_cat[3])
-        role = discord.utils.get(guild.roles, id=role.id)
+        role = discord.utils.get(guild.roles, id=role)
         category = await self.bot.fetch_channel(category_id)
 
         success = await confirmation(self.bot, ctx, "Set permissions",
