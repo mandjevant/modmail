@@ -134,3 +134,4 @@ dmypy.json
 # Configuration
 conf.ini
 docs/_build
+.scannerwork

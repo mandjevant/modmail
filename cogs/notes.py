@@ -174,8 +174,6 @@ class notesCog(commands.Cog):
         if isinstance(err, commands.CheckFailure):
             await ctx.send("Sorry, you don't have permission to run this command")
         elif isinstance(err, commands.BadArgument):
-            await ctx.send("I'm missing an argument, please check if the id is provided")
-        elif isinstance(err, commands.BadArgument):
             await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help note`.")
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")

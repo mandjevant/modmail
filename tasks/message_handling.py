@@ -8,7 +8,6 @@ import typing
 # the class category selector is for the user side
 #  The user can select what category their modmail is for
 class category_selector:
-
     # Run takes bot commands.Bot, db_conn asyncpg.Pool, and message discord.Message
     #   Asks the user for the desired category and listens for reaction
     #   on_reaction => check the database if the reaction is valid and sends error if not
