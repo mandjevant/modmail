@@ -121,7 +121,7 @@ class ModmailCog(commands.Cog):
 
         category, guild = await category_selector.start_embed(self.bot, ctx.channel, ctx.author, True) or (None, None)
 
-        if category or guild is None:
+        if category is None:
             return
 
         channel = await guild.create_text_channel(name=f'{user.name}-{user.discriminator}', category=category)

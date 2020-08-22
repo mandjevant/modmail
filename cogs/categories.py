@@ -164,10 +164,10 @@ class CategoriesCog(commands.Cog):
         guild = await self.bot.fetch_guild(guild_id)
         try:
             category = await guild.create_category(category_name)
-            await category.set_permissions(guild.default_role, read_messages=False, send_messages=False,
-                                           read_message_history=False)
             await category.set_permissions(self.bot.user, read_messages=True, send_messages=True,
                                            read_message_history=True)
+            await category.set_permissions(guild.default_role, read_messages=False, send_messages=False,
+                                           read_message_history=False)
         except (discord.ext.commands.MissingPermissions, discord.errors.Forbidden):
             await ctx.send(embed=common_embed("Create category",
                                               "Oof, I'm missing permissions. Please add them and try again."))

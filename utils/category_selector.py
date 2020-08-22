@@ -7,7 +7,6 @@ import typing
 # the class category selector is for the user side
 #  The user can select what category their modmail is for
 class category_selector:
-
     # Run takes bot commands.Bot, channel discord.Text, user discord.User, delete_message bool default False
     #   Asks the user for the desired category and listens for reaction
     #   on_reaction => check the database if the reaction is valid and sends error if not
@@ -58,10 +57,8 @@ class category_selector:
         else:
             category = bot.get_channel(db_category[0])
             guild = bot.get_guild(db_category[1])
-
-            return category, guild
-
-        finally:
             if delete_message:
                 await asyncio.sleep(2)
                 await msg.delete()
+
+            return category, guild
