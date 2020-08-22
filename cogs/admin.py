@@ -24,6 +24,7 @@ class adminCog(commands.Cog):
         self.bot.reload_extension('cogs.permissions')
         self.bot.reload_extension('cogs.notes')
         self.bot.reload_extension('cogs.standard_replies')
+        self.bot.reload_extension('cogs.help')
         self.bot.reload_extension('tasks.muted_tasks')
         self.bot.reload_extension('tasks.message_handling')
         self.bot.reload_extension('tasks.verify_categories_tasks')

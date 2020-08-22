@@ -20,6 +20,7 @@ class Bot(commands.Bot):
         self.load_extension('cogs.permissions')
         self.load_extension('cogs.notes')
         self.load_extension('cogs.standard_replies')
+        self.load_extension('cogs.help')
         self.load_extension('tasks.muted_tasks')
         self.load_extension('tasks.verify_categories_tasks')
         self.load_extension('tasks.message_handling')
