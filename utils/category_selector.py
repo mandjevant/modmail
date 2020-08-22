@@ -58,10 +58,8 @@ class category_selector:
         else:
             category = bot.get_channel(db_category[0])
             guild = bot.get_guild(db_category[1])
-
-            return category, guild
-
-        finally:
             if delete_message:
                 await asyncio.sleep(2)
                 await msg.delete()
+
+            return category, guild
