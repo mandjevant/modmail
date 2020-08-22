@@ -302,16 +302,14 @@ class ModmailCog(commands.Cog):
             mod_msg = await ctx.channel.fetch_message(results[0])
             usr_msg = await usr.dm_channel.fetch_message(results[1])
 
-            usr_embed = common_embed('', message, color=self.yellow)
-            usr_embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
-            usr_embed.set_footer(text=ctx.author.roles[-1].name)
+            mod_new_embed = mod_msg.embeds[0]
+            mod_new_embed.description = message
 
-            thread_embed = common_embed('', message, color=self.green)
-            thread_embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
-            thread_embed.set_footer(text=ctx.author.roles[-1].name)
+            usr_new_embed = usr_msg.embeds[0]
+            usr_new_embed.description = message
 
-            await usr_msg.edit(embed=usr_embed)
-            await mod_msg.edit(embed=thread_embed)
+            await usr_msg.edit(embed=usr_new_embed)
+            await mod_msg.edit(embed=mod_new_embed)
 
             await self.db_conn.execute("UPDATE modmail.messages \
                                         SET message=$1 \
