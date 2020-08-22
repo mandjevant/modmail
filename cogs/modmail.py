@@ -6,7 +6,7 @@ from asyncpg import ForeignKeyViolationError
 from natural.date import duration
 from utils.checks import *
 from utils.reply import *
-from tasks.message_handling import category_selector
+from utils.category_selector import *
 
 
 class ModmailCog(commands.Cog):
