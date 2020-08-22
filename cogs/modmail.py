@@ -6,6 +6,7 @@ from asyncpg import ForeignKeyViolationError
 from natural.date import duration
 from utils.checks import *
 from utils.reply import *
+from utils.category_selector import *
 
 
 class ModmailCog(commands.Cog):
@@ -104,10 +105,10 @@ class ModmailCog(commands.Cog):
     #  If category string => Fetches category from string.
     #  Creates modmail thread and notifies the user about it.
     #  Creates channel on success, error on failure.
-    @commands.command()
+    @commands.command(aliases=['contact', 'newthread', 'new_thread'])
     @has_access()
     @commands.guild_only()
-    async def create(self, ctx, user: typing.Union[discord.Member, int], category: typing.Union[int, str]) -> None:
+    async def create(self, ctx, user: typing.Union[discord.Member, int]) -> None:
         main_guild = await self.bot.fetch_guild(self.conf.get('global', 'main_server_id'))
 
         if isinstance(user, int):
@@ -118,26 +119,11 @@ class ModmailCog(commands.Cog):
                                               "Unable to find that user, please check the id and try again"))
             return
 
-        if isinstance(category, int):
-            db_category = await self.db_conn.fetchrow("SELECT guild_id \
-                                                       FROM modmail.categories \
-                                                       WHERE \
-                                                            category_id = $1",
-                                                      category)
-            category = self.bot.get_channel(category)
-        else:
-            db_category = await self.db_conn.fetchrow("SELECT guild_id, category_id \
-                                                       FROM modmail.categories \
-                                                       WHERE lower(category_name) = lower($1) AND \
-                                                            active=true",
-                                                      category)
-            category = self.bot.get_channel(db_category[1])
-            if not category:
-                await ctx.send(embed=common_embed("Create conversation",
-                                                  "Unable to fetch that category please check spelling or use the id"))
-                return
+        category, guild = await category_selector.start_embed(self.bot, ctx.channel, ctx.author, True) or (None, None)
 
-        guild = self.bot.get_guild(db_category[0])
+        if category is None:
+            return
+
         channel = await guild.create_text_channel(name=f'{user.name}-{user.discriminator}', category=category)
 
         try:
@@ -188,8 +174,9 @@ class ModmailCog(commands.Cog):
             await channel.delete(reason="Thread Closed")
 
         else:
-            await ctx.send(embed=common_embed("Create conversation",
-                                              f"The conversation was created at {channel.mention}"))
+            await ctx.message.add_reaction('✅')
+            await asyncio.sleep(10)
+            await ctx.message.delete()
 
     @create.error
     async def create_error(self, ctx, err: any) -> None:

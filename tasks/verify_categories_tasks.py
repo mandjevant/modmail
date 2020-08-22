@@ -39,7 +39,7 @@ class verifyCategoriesTasks(commands.Cog):
         owners = [await self.bot.fetch_user(owner) for owner in json.loads(self.conf.get('global', 'owners'))]
         for row in results:
             guild = await self.bot.fetch_guild(row[2])
-            admin_role = discord.utils.get(guild.roles, id=self.conf.get('global', 'admin_role_id'))
+            admin_role = guild.get_role(self.conf.get('global', 'admin_role_id'))
             chnl = self.bot.get_channel(self.chnl_id)
             category = self.bot.get_channel(row[0])
             if category is None:

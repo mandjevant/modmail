@@ -1,64 +1,6 @@
+from utils.category_selector import *
 from discord.ext import commands
 from utils.common_embed import *
-import asyncio
-import asyncpg
-import typing
-
-
-# the class category selector is for the user side
-#  The user can select what category their modmail is for
-class category_selector:
-    # Run takes bot commands.Bot, db_conn asyncpg.Pool, and message discord.Message
-    #   Asks the user for the desired category and listens for reaction
-    #   on_reaction => check the database if the reaction is valid and sends error if not
-    #   returns discord.CategoryChannel and discord.Guild on success, None on failure
-    @staticmethod
-    async def start_embed(bot: commands.Bot, db_conn: asyncpg.pool.Pool, message: discord.Message) -> \
-            typing.Optional[typing.Tuple[discord.CategoryChannel, discord.Guild]]:
-
-        try:
-            categories = await db_conn.fetch("SELECT category_name, emote_id \
-                                              FROM modmail.categories \
-                                              WHERE \
-                                                active=true")
-            embed = common_embed("Category Selector",
-                                 "Please react with the corresponding emote for your desired category")
-
-            embed.add_field(name="Available categories: ",
-                            value="\n".join([f"{row[0].capitalize()} = {row[1]}" for row in categories]))
-            msg = await message.channel.send(embed=embed)
-
-            for row in categories:
-                await msg.add_reaction(row[1])
-
-            reaction, _ = await bot.wait_for("reaction_add",
-                                             check=lambda react,
-                                                          user: react.message.id == msg.id and user == message.author,
-                                             timeout=120)
-
-            db_category = await db_conn.fetchrow("SELECT category_id, guild_id \
-                                                  FROM modmail.categories \
-                                                  WHERE \
-                                                    emote_id=$1 AND \
-                                                    active=true",
-                                                 reaction.emoji)
-
-            if not db_category:
-                await msg.edit(embed=common_embed("Invalid Reaction",
-                                                  "What the heck, you should be using the existing emotes not new "
-                                                  "ones. Please restart the process and try again"))
-                return
-
-        except asyncio.TimeoutError:
-            await message.channel.send("You didn't answer in time, please restart the process by sending your message "
-                                       "again")
-            return
-
-        else:
-            category = bot.get_channel(db_category[0])
-            guild = bot.get_guild(db_category[1])
-
-            return category, guild
 
 
 class messageHandlingTasks(commands.Cog):
@@ -123,7 +65,8 @@ class messageHandlingTasks(commands.Cog):
                                                 active=true",
                                            message.author.id)
         if not conv:
-            category, guild = await category_selector.start_embed(self.bot, self.db_conn, message) or (None, None)
+            category, guild = await category_selector.start_embed(self.bot, message.channel, message.author) or (
+                None, None)
 
             if category is None:
                 return
@@ -147,7 +90,7 @@ class messageHandlingTasks(commands.Cog):
                     user = guild.get_member(message.author.id)
                     created_ago = datetime.datetime.now() - user.created_at
                     joined_ago = datetime.datetime.now() - user.joined_at
-                    chnl_embed_msg = f"{user.mention} was created {created_ago.days} days ago, "\
+                    chnl_embed_msg = f"{user.mention} was created {created_ago.days} days ago, " \
                                      f"joined {joined_ago.days} days ago"
                 except AttributeError:
                     check = False

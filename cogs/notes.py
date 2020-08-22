@@ -202,7 +202,7 @@ class notesCog(commands.Cog):
                                             note_id = $1", note_id)
         finally:
             await ctx.send(embed=common_embed(title="Success",
-                                              description='Successfully deleted note with id: `{note_id}`'))
+                                              description=f'Successfully deleted note with id: `{note_id}`'))
 
     @deletenote.error
     async def deletenote_error(self, ctx, err: any):
