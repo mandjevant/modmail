@@ -115,7 +115,7 @@ class CategoriesCog(commands.Cog):
     @commands.command(pass_context=True)
     @is_admin()
     @commands.guild_only()
-    async def create_category(self, ctx, guild_id: int, category_name: str) -> None:
+    async def create_category(self, ctx, guild_id: int, *, category_name: str) -> None:
         if not await fetch_guild(self.bot, guild_id):
             await ctx.send(embed=common_embed("Link category",
                                               "Unable to fetch guild. Please check if the ID is correct."))
