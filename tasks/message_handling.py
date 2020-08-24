@@ -143,7 +143,7 @@ class messageHandlingTasks(commands.Cog):
                                         VALUES ($1, $2, $3, $4, false)",
                                        message.id, message.content, message.author.id, conv_id[0])
 
-            usr_embed = common_embed("Message send",
+            usr_embed = common_embed("Message sent",
                                      f"> {message.content} \n\n *if this isn't correct you can change it with "
                                      f"{self.bot.command_prefix}edit*",
                                      color=self.green)
@@ -168,7 +168,7 @@ class messageHandlingTasks(commands.Cog):
             thread_embed.set_footer(text=f"Message ID: {message.id}")
             thread_msg = await channel.send(embed=thread_embed)
 
-            usr_embed = common_embed("Message send",
+            usr_embed = common_embed("Message sent",
                                      f"> {message.content}\n\n *if this isn't correct you can change it with "
                                      f"{self.bot.command_prefix}edit*",
                                      color=self.green)

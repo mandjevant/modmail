@@ -251,7 +251,7 @@ class ModmailCog(commands.Cog):
                                                    ORDER BY messages.created_at DESC \
                                                    LIMIT 1", ctx.author.id)
             if not results:
-                await ctx.send(embed=common_embed("Edit message", "There's no message made in this thread yet"))
+                await ctx.send(embed=common_embed("Edit message", "You have not sent any messages in this thread yet"))
                 return
 
             mod_chnl = await self.bot.fetch_channel(results[3])
@@ -374,53 +374,26 @@ class ModmailCog(commands.Cog):
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
-    # forward takes category int, str
-    #  If category int => checks if valid returns error on failure
-    #  If category str => fetches category id from db with the name
+    # forward takes no arguments
+    #  Sends category selector embed
     #  Forwards the conversation to the selected category
     #  Sends every previous message in new thread and deletes old channel
     #  Returns confirmation on success, error on failure
     @commands.command()
     @has_access()
     @commands.guild_only()
-    async def forward(self, ctx, category: typing.Union[int, str]) -> None:
-        if isinstance(category, int):
-            if ctx.channel.category.id == category:
-                await ctx.send(embed=common_embed("Forward conversation", "The conversation is already in that thread"))
-                return
+    async def forward(self, ctx) -> None:
+        category, guild = await category_selector.start_embed(self.bot, ctx.channel, ctx.author, True) or (None, None)
 
-            cat_db = await self.db_conn.fetchrow("SELECT category_id, guild_id \
-                                                  FROM modmail.categories \
-                                                  WHERE \
-                                                    category_id = $1",
-                                                 category)
-            if not cat_db:
-                await ctx.send(embed=common_embed("Forward conversation",
-                                                  "I can't find the category related to that id please check if its "
-                                                  "correct"))
-                return
+        if category is None:
+            return
+        elif category == ctx.channel.category:
+            await ctx.send(embed=common_embed("Forward conversation", f"This conversation is already in category {category.name}"))
 
-        else:
-            if ctx.channel.category.name == category:
-                await ctx.send(embed=common_embed("Forward conversation", "The conversation is already in that thread"))
-                return
-
-            cat_db = await self.db_conn.fetchrow("SELECT category_id, guild_id \
-                                                  FROM modmail.categories \
-                                                  WHERE \
-                                                    lower(category_name) = lower($1)",
-                                                 category)
-            if not cat_db:
-                await ctx.send(embed=common_embed("Create conversation",
-                                                  "Unable to fetch that category please check spelling or use the id"))
-                return
         usr_db = await self.db_conn.fetchrow("SELECT user_id, conversation_id \
                                               FROM modmail.conversations \
                                               WHERE \
                                                 channel_id=$1", ctx.channel.id)
-
-        guild = self.bot.get_guild(cat_db[1]) if not ctx.guild.id == cat_db[1] else ctx.guild
-        category = await self.bot.fetch_channel(cat_db[0])
         user = await self.bot.fetch_user(usr_db[0])
 
         channel = await guild.create_text_channel(name=f"{user.name}-{user.discriminator}", category=category)
