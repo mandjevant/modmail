@@ -435,6 +435,13 @@ class ModmailCog(commands.Cog):
                                                 deleted=false",
                                             usr_db[1])
 
+        internal_messages = await self.db_conn.fetch("SELECT * \
+                                                      FROM modmail.messages \
+                                                      WHERE \
+                                                        conversation_id=$1 AND \
+                                                        deleted=false",
+                                                     usr_db[1])
+
         for row in messages:
             author = await self.bot.fetch_user(row[2])
 
@@ -448,6 +455,13 @@ class ModmailCog(commands.Cog):
                                         WHERE \
                                             message_id=$2",
                                        msg.id, row[3])
+
+            if row[3] in internal_messages:
+                await self.db_conn.execute("UPDATE modmail.messages \
+                                            SET message_id=$1 \
+                                            WHERE \
+                                                message_id=$2",
+                                           msg.id, row[3])
 
         await self.db_conn.execute("UPDATE modmail.conversations \
                                     SET channel_id = $1 \
