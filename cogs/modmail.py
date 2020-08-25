@@ -1,6 +1,4 @@
-import asyncio
 import pytz
-import typing
 import disputils
 from asyncpg import ForeignKeyViolationError
 from natural.date import duration
@@ -123,6 +121,23 @@ class ModmailCog(commands.Cog):
 
         if category is None:
             return
+
+        category_permissions = await self.bot.db_conn.fetch("SELECT role_id \
+                                                             FROM modmail.permissions \
+                                                             WHERE \
+                                                               active=true AND \
+                                                               category_id=$1", category.id)
+
+        try:
+            if len(set(category_permissions) - set([role.id for role in guild.get_member(ctx.author.id).roles])) == 0:
+                await ctx.send(embed=common_embed("Create conversation",
+                                                  "You do not have permissions in this category."))
+                return
+        except:
+            if ctx.author.id not in json.loads(self.conf.get('global', 'owners')):
+                await ctx.send(embed=common_embed("Create conversation",
+                                                  "You do not have permissions in this category."))
+                return
 
         channel = await guild.create_text_channel(name=f'{user.name}-{user.discriminator}', category=category)
 
@@ -414,11 +429,18 @@ class ModmailCog(commands.Cog):
                                               f"Conversation forwarded by {ctx.author.mention} from "
                                               f"{ctx.channel.category.name}"))
         messages = await self.db_conn.fetch("SELECT message, made_by_mod, author_id, message_id \
-                                             FROM modmail.messages \
+                                             FROM modmail.all_messages_attachments \
                                              WHERE \
                                                 conversation_id=$1 AND \
                                                 deleted=false",
                                             usr_db[1])
+
+        internal_messages = await self.db_conn.fetch("SELECT * \
+                                                      FROM modmail.messages \
+                                                      WHERE \
+                                                        conversation_id=$1 AND \
+                                                        deleted=false",
+                                                     usr_db[1])
 
         for row in messages:
             author = await self.bot.fetch_user(row[2])
@@ -428,11 +450,18 @@ class ModmailCog(commands.Cog):
             thread_embed.set_footer(text="Forwarded message")
             msg = await channel.send(embed=thread_embed)
 
-            await self.db_conn.execute("UPDATE modmail.messages \
+            await self.db_conn.execute("UPDATE modmail.all_messages_attachments \
                                         SET message_id=$1 \
                                         WHERE \
                                             message_id=$2",
                                        msg.id, row[3])
+
+            if row[3] in internal_messages:
+                await self.db_conn.execute("UPDATE modmail.messages \
+                                            SET message_id=$1 \
+                                            WHERE \
+                                                message_id=$2",
+                                           msg.id, row[3])
 
         await self.db_conn.execute("UPDATE modmail.conversations \
                                     SET channel_id = $1 \
@@ -442,7 +471,7 @@ class ModmailCog(commands.Cog):
 
         await user.send(embed=common_embed("Conversation forward", f"You were forwarded to {channel.category.name}"))
         await ctx.send(embed=common_embed("Conversation forward",
-                                          "The conversation was successfully forwarded this channel will get deleted "
+                                          "The conversation was successfully forwarded. This channel will get deleted "
                                           "in 10 seconds"))
         await asyncio.sleep(10)
         await ctx.channel.delete()

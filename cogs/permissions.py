@@ -116,7 +116,8 @@ class PermissionsCog(commands.Cog):
             role = discord.utils.get(category.guild.roles, id=row[2])
             embed = discord.Embed(title=f"Category: {category} ({row[0]})",
                                   description=f"Guild: {category.guild} ({category.guild.id})\n"
-                                              f"Role: {role.mention} ({row[2]})",
+                                              f"Role: {role.mention if category.guild.id == ctx.guild.id else role.name}"
+                                              f"({row[2]})",
                                   color=discord.Color.red(), timestamp=datetime.datetime.now())
             embed.set_footer(text="Active permissions")
 
@@ -190,7 +191,8 @@ class PermissionsCog(commands.Cog):
             role = discord.utils.get(category.guild.roles, id=row[2])
             embed = discord.Embed(title=f"Category: {category} ({row[0]})",
                                   description=f"Guild: {category.guild} ({category.guild.id})\n"
-                                              f"Role: {role.mention} ({row[2]})",
+                                              f"Role: {role.mention if category.guild.id==ctx.guild.id else role.name} "
+                                              f"({row[2]})",
                                   color=discord.Color.red(), timestamp=datetime.datetime.now())
             embed.set_footer(text="Active permissions")
 
@@ -235,6 +237,10 @@ class PermissionsCog(commands.Cog):
 
         category = await self.bot.fetch_channel(category_id)
 
+        if not isinstance(role, discord.Role):
+            guild = await self.bot.fetch_guild(category.guild.id)
+            role = discord.utils.get(guild.roles, id=role)
+
         if results_perm[3]:
             await ctx.send(embed=common_embed("Activate permissions",
                                               f"The permissions for role {results_perm[1]} ({results_perm[2]}) for "
@@ -278,9 +284,6 @@ class PermissionsCog(commands.Cog):
     @is_admin()
     @commands.guild_only()
     async def deactivate_permission(self, ctx, category_id: int, role: typing.Union[discord.Role, int]) -> None:
-        if isinstance(role, discord.Role):
-            role = role.id
-
         results_perm = await self.db_conn.fetchrow("SELECT * \
                                                     FROM modmail.permissions \
                                                     WHERE \
@@ -293,6 +296,10 @@ class PermissionsCog(commands.Cog):
             return
 
         category = await self.bot.fetch_channel(category_id)
+
+        if not isinstance(role, discord.Role):
+            guild = await self.bot.fetch_guild(category.guild.id)
+            role = discord.utils.get(guild.roles, id=role)
 
         if not results_perm[3]:
             await ctx.send(embed=common_embed("Deactivate permissions",
