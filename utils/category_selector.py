@@ -18,9 +18,9 @@ class category_selector:
 
         try:
             categories = await bot.db_conn.fetch("SELECT category_name, emote_id \
-                                              FROM modmail.categories \
-                                              WHERE \
-                                                active=true")
+                                                  FROM modmail.categories \
+                                                  WHERE \
+                                                    active=true")
             embed = common_embed("Category Selector",
                                  "Please react with the corresponding emote for your desired category")
 
@@ -37,10 +37,10 @@ class category_selector:
                                              timeout=120)
 
             db_category = await bot.db_conn.fetchrow("SELECT category_id, guild_id \
-                                                  FROM modmail.categories \
-                                                  WHERE \
-                                                    emote_id=$1 AND \
-                                                    active=true",
+                                                      FROM modmail.categories \
+                                                      WHERE \
+                                                        emote_id=$1 AND \
+                                                        active=true",
                                                      reaction.emoji)
 
             if not db_category:

@@ -28,6 +28,7 @@ class adminCog(commands.Cog):
         self.bot.reload_extension('tasks.muted_tasks')
         self.bot.reload_extension('tasks.message_handling')
         self.bot.reload_extension('tasks.verify_categories_tasks')
+        self.bot.reload_extension('tasks.member_join_leave')
 
         await ctx.send(embed=common_embed("Reload cogs", f"{ctx.author.mention}, all cogs have been reloaded."))
 

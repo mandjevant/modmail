@@ -24,6 +24,7 @@ class Bot(commands.Bot):
         self.load_extension('tasks.muted_tasks')
         self.load_extension('tasks.verify_categories_tasks')
         self.load_extension('tasks.message_handling')
+        self.load_extension('tasks.member_join_leave')
 
     @staticmethod
     async def on_ready():
