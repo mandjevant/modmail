@@ -14,6 +14,7 @@ class ModmailCog(commands.Cog):
         self.conf = bot.conf
         self.yellow = 0xE8D90C
         self.green = 0x7CFC00
+        self.blue = 0xADD8E6
 
     # Reply takes a text of max 2048 characters
     #  replies to modmail with the inputted text
@@ -445,9 +446,14 @@ class ModmailCog(commands.Cog):
         for row in messages:
             author = await self.bot.fetch_user(row[2])
 
-            thread_embed = common_embed("", row[0], color=self.green if row[1] else self.yellow)
+            if row[3] in internal_messages:
+                thread_embed = common_embed("", row[0], color=self.green if row[1] else self.yellow)
+            else:
+                thread_embed = common_embed("", "**Internal Message:**\n"+row[0], color=self.blue)
+
             thread_embed.set_author(name=str(author), icon_url=author.avatar_url)
             thread_embed.set_footer(text="Forwarded message")
+
             msg = await channel.send(embed=thread_embed)
 
             await self.db_conn.execute("UPDATE modmail.all_messages_attachments \
