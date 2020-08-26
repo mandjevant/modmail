@@ -188,9 +188,9 @@ class Pages:
 
     async def show_help(self):
         """shows this message"""
-        messages = ['Welcome to the interactive paginator!\n']
-        messages.append('This interactively allows you to see pages of text by navigating with ' \
-                        'reactions. They are as follows:\n')
+        messages = ['Welcome to the interactive paginator!\n',
+                    'This interactively allows you to see pages of text by navigating with '
+                    'reactions. They are as follows:\n']
 
         for (emoji, func) in self.reaction_emojis:
             messages.append(f'{emoji} {func.__doc__}')
@@ -244,8 +244,6 @@ class Pages:
                     await self.message.clear_reactions()
                 except:
                     pass
-                finally:
-                    break
 
             try:
                 await self.message.remove_reaction(payload.emoji, discord.Object(id=payload.user_id))

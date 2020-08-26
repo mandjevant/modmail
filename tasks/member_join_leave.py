@@ -22,7 +22,7 @@ class memberGuildLeaveJoinTask(commands.Cog):
     @commands.Cog.listener(name="on_member_join")
     async def member_join_listener(self, member: discord.Member) -> None:
         channel_id = await self.member_has_conversation(member=member)
-        if (channel_id is not []) and (channel_id is not None) and (len(channel_id) > 0):
+        if (channel_id != []) and (channel_id is not None) and (len(channel_id) > 0):
             if (channel_id[0] is not None) and (channel_id[0] is not "") and (len(channel_id[0]) > 0):
                 if (channel_id[0][0] is not "") and (channel_id[0][0] is not None):
                     ch = await self.bot.fetch_channel(channel_id[0][0])
@@ -32,7 +32,7 @@ class memberGuildLeaveJoinTask(commands.Cog):
     @commands.Cog.listener(name="on_member_remove")
     async def member_leave_listener(self, member: discord.Member) -> None:
         channel_id = await self.member_has_conversation(member=member)
-        if (channel_id is not []) and (channel_id is not None) and (len(channel_id) > 0):
+        if (channel_id != []) and (channel_id is not None) and (len(channel_id) > 0):
             if (channel_id[0] is not None) and (channel_id[0] is not "") and (len(channel_id[0]) > 0):
                 if (channel_id[0][0] is not "") and (channel_id[0][0] is not None):
                     ch = await self.bot.fetch_channel(channel_id[0][0])
