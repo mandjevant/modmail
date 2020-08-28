@@ -287,14 +287,6 @@ class ModmailCog(commands.Cog):
             await ctx.send(embed=usr_embed)
             await mod_msg.edit(embed=thread_embed)
 
-            await self.db_conn.execute("UPDATE modmail.messages \
-                                        SET message=$1 \
-                                        WHERE \
-                                            message_id=$2",
-                                       message, results[0])
-
-            await ctx.message.add_reaction('✅')
-
         else:
             results = await self.db_conn.fetchrow("SELECT messages.message_id, messages.other_side_message_id, \
                                                           conversations.user_id \
@@ -327,13 +319,18 @@ class ModmailCog(commands.Cog):
             await usr_msg.edit(embed=usr_new_embed)
             await mod_msg.edit(embed=mod_new_embed)
 
-            await self.db_conn.execute("UPDATE modmail.messages \
-                                        SET message=$1 \
-                                        WHERE \
-                                            message_id=$2",
-                                       message, results[0])
+        await self.db_conn.execute("UPDATE modmail.messages \
+                                    SET message=$1 \
+                                    WHERE \
+                                        message_id=$2",
+                                   message, results[0])
+        await self.db_conn.execute("UPDATE modmail.all_messages_attachments \
+                                    SET message=$1 \
+                                    WHERE \
+                                        message_id=$2",
+                                   message, results[0])
 
-            await ctx.message.add_reaction('✅')
+        await ctx.message.add_reaction('✅')
 
     @edit.error
     async def edit_error(self, ctx, err: any) -> None:
@@ -346,37 +343,63 @@ class ModmailCog(commands.Cog):
         else:
             await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
-    # Delete takes no arguments.
+    # Delete takes optional message parameter
     #  Only available for mods, user runs on event
+    #  If message parameter is supplied => locates that message and deletes it
     #  If there is a message to delete => Deletes the message on user and mod side
-    #  Returns nothing on success, error on failure
+    #  Returns reaction on success, error on failure
     @commands.command()
     @has_access()
     @commands.guild_only()
-    async def delete(self, ctx) -> None:
-        results = await self.db_conn.fetchrow("SELECT messages.message_id, messages.other_side_message_id, \
-                                                      conversations.user_id \
-                                               FROM modmail.messages \
-                                               INNER JOIN modmail.conversations \
-                                               ON messages.conversation_id = conversations.conversation_id \
-                                               WHERE \
-                                                    conversations.channel_id = $1 AND \
-                                                    messages.made_by_mod = true AND \
-                                                    deleted = false \
-                                               ORDER BY messages.created_at DESC \
-                                               LIMIT 1", ctx.channel.id)
-        if not results:
-            await ctx.send(embed=common_embed("Delete message", "There's no message made by mods in this thread yet"))
-            return
+    async def delete(self, ctx, message: typing.Optional[int]) -> None:
+        if message is None:
+            results = await self.db_conn.fetchrow("SELECT messages.message_id, messages.other_side_message_id, \
+                                                          conversations.user_id \
+                                                   FROM modmail.messages \
+                                                   INNER JOIN modmail.conversations \
+                                                   ON messages.conversation_id = conversations.conversation_id \
+                                                   WHERE \
+                                                        conversations.channel_id = $1 AND \
+                                                        messages.made_by_mod = true AND \
+                                                        deleted = false \
+                                                   ORDER BY messages.created_at DESC \
+                                                   LIMIT 1", ctx.channel.id)
+            if not results:
+                await ctx.send(
+                    embed=common_embed("Delete message", "There's no message made by mods in this thread yet"))
+                return
+
+            mod_msg: discord.Message = await ctx.channel.fetch_message(results[0])
+
+        else:
+
+            mod_msg: discord.Message = await ctx.channel.fetch_message(message)
+            results = await self.db_conn.fetchrow("SELECT messages.message_id, messages.other_side_message_id, \
+                                                          conversations.user_id \
+                                                   FROM modmail.messages \
+                                                   INNER JOIN modmail.conversations \
+                                                   ON messages.conversation_id = conversations.conversation_id \
+                                                   WHERE \
+                                                        messages.message_id = $1 AND \
+                                                        messages.made_by_mod = true AND \
+                                                        deleted = false \
+                                                   ORDER BY messages.created_at DESC \
+                                                   LIMIT 1", message)
+            if not results:
+                await ctx.send(embed=common_embed("Delete message",
+                                                  "Unable to locate a message with that ID, please check the ID and try again"))
+                return
 
         usr = await self.bot.fetch_user(results[2])
-
-        mod_msg: discord.Message = await ctx.channel.fetch_message(results[0])
         usr_msg: discord.Message = await usr.dm_channel.fetch_message(results[1])
 
         await mod_msg.delete()
         await usr_msg.delete()
         await self.db_conn.execute("UPDATE modmail.messages \
+                                    SET deleted=true \
+                                    WHERE \
+                                        message_id=$1", results[0])
+        await self.db_conn.execute("UPDATE modmail.all_messages_attachments \
                                     SET deleted=true \
                                     WHERE \
                                         message_id=$1", results[0])
@@ -404,7 +427,8 @@ class ModmailCog(commands.Cog):
         if category is None:
             return
         elif category == ctx.channel.category:
-            await ctx.send(embed=common_embed("Forward conversation", f"This conversation is already in category {category.name}"))
+            await ctx.send(
+                embed=common_embed("Forward conversation", f"This conversation is already in category {category.name}"))
 
         usr_db = await self.db_conn.fetchrow("SELECT user_id, conversation_id \
                                               FROM modmail.conversations \
@@ -449,7 +473,7 @@ class ModmailCog(commands.Cog):
             if row[3] in internal_messages:
                 thread_embed = common_embed("", row[0], color=self.green if row[1] else self.yellow)
             else:
-                thread_embed = common_embed("", "**Internal Message:**\n"+row[0], color=self.blue)
+                thread_embed = common_embed("", "**Internal Message:**\n" + row[0], color=self.blue)
 
             thread_embed.set_author(name=str(author), icon_url=author.avatar_url)
             thread_embed.set_footer(text="Forwarded message")
