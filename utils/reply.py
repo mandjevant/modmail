@@ -24,7 +24,8 @@ async def reply(bot: commands.Bot, ctx: commands.Context, db_conn: asyncpg.pool.
 
     if attachments:
         usr_embed.add_field(name=f"File upload ({len(attachments)})",
-                            value='\n'.join([f"[{attachment.filename}]({attachment.url})" for attachment in attachments]))
+                            value='\n'.join(
+                                [f"[{attachment.filename}]({attachment.url})" for attachment in attachments]))
 
     usr_msg = await user.send(embed=usr_embed)
 
@@ -33,12 +34,18 @@ async def reply(bot: commands.Bot, ctx: commands.Context, db_conn: asyncpg.pool.
     thread_embed.set_footer(text=ctx.author.roles[-1].name if not anon else "anonymous reply")
     if attachments:
         thread_embed.add_field(name=f"File upload ({len(attachments)})",
-                            value='\n'.join([f"[{attachment.filename}]({attachment.url})" for attachment in attachments]))
+                               value='\n'.join(
+                                   [f"[{attachment.filename}]({attachment.url})" for attachment in attachments]))
     mod_msg = await ctx.send(embed=thread_embed)
 
     await db_conn.execute("INSERT INTO modmail.messages \
                            (message_id, message, author_id, conversation_id, other_side_message_id, made_by_mod) \
                            VALUES ($1, $2, $3, $4, $5, true)",
                           mod_msg.id, message, ctx.author.id, conv_id, usr_msg.id)
+
+    await db_conn.execute("INSERT INTO modmail.all_messages_attachments \
+                           (message_id, message, author_id, conversation_id, made_by_mod, internal) \
+                           VALUES ($1, $2, $3, $4, true, true)",
+                          mod_msg.id, message, ctx.author.id, conv_id)
 
     await ctx.message.delete()
