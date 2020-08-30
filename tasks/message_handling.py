@@ -38,7 +38,7 @@ class messageHandlingTasks(commands.Cog):
 
                 await self.db_conn.execute("INSERT INTO modmail.all_messages_attachments \
                                             (message_id, message, author_id, conversation_id, made_by_mod) \
-                                            VALUES ($1, $2, $3, $4, true)",
+                                            VALUES ($1, $2, $3, $4, false)",
                                            message.id, message.content, message.author.id, conv_id[0])
 
                 if message.attachments:
@@ -237,6 +237,11 @@ class messageHandlingTasks(commands.Cog):
 
                 await usr_msg.edit(embed=usr_embed)
                 await self.db_conn.execute("UPDATE modmail.messages \
+                                            SET deleted=true \
+                                            WHERE \
+                                                message_id=$1", message.id)
+
+                await self.db_conn.execute("UPDATE modmail.all_messages_attachments \
                                             SET deleted=true \
                                             WHERE \
                                                 message_id=$1", message.id)
