@@ -85,17 +85,6 @@ class PermissionsCog(commands.Cog):
         ch = self.bot.get_channel(category_id)
         await ch.set_permissions(role, read_messages=True, send_messages=True, read_message_history=True)
 
-    @set_permissions.error
-    async def set_permissions_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help set_permissions`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help set_permissions`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # permissions takes no parameters
     #  gets all active permissions
     #  sends result on success, error on failure
@@ -152,13 +141,6 @@ class PermissionsCog(commands.Cog):
         await msg.delete()
         await disputils.BotEmbedPaginator(ctx, embeds).run()
 
-    @permissions.error
-    async def permissions_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # category_permissions takes category_id int
     #  gets all active permissions for this category
     #  sends result on success, error on failure
@@ -191,7 +173,7 @@ class PermissionsCog(commands.Cog):
             role = discord.utils.get(category.guild.roles, id=row[2])
             embed = discord.Embed(title=f"Category: {category} ({row[0]})",
                                   description=f"Guild: {category.guild} ({category.guild.id})\n"
-                                              f"Role: {role.mention if category.guild.id==ctx.guild.id else role.name} "
+                                              f"Role: {role.mention if category.guild.id == ctx.guild.id else role.name} "
                                               f"({row[2]})",
                                   color=discord.Color.red(), timestamp=datetime.datetime.now())
             embed.set_footer(text="Active permissions")
@@ -200,19 +182,6 @@ class PermissionsCog(commands.Cog):
 
         await msg.delete()
         await disputils.BotEmbedPaginator(ctx, embeds).run()
-
-    @category_permissions.error
-    async def category_permissions_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help "
-                           f"category_permissions`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help "
-                           f"category_permissions`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # activate_permission takes category_id int and role_id discord.Role/int
     #  makes sure category is real and inactive
@@ -265,18 +234,6 @@ class PermissionsCog(commands.Cog):
         ch = self.bot.get_channel(category_id)
         await ch.set_permissions(role, read_messages=True, send_messages=True, read_message_history=True)
 
-    @activate_permission.error
-    async def activate_permission_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help activate_permission`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help activate_permission`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # deactivate_permission takes category_id int and role_id discord.Role/int
     #  makes sure category is real and active
     #  asks confirmation and updates the database
@@ -324,18 +281,6 @@ class PermissionsCog(commands.Cog):
 
         ch = self.bot.get_channel(category_id)
         await ch.set_permissions(role, read_messages=False, send_messages=False, read_message_history=False)
-
-    @deactivate_permission.error
-    async def deactivate_permission_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help deactivate_permission`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help deactivate_permission`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
 
 def setup(bot):

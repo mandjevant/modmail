@@ -38,18 +38,6 @@ class standardRepliesCog(commands.Cog):
 
         await reply(self.bot, ctx, self.db_conn, conversation[1], reply_db[0], conversation[0])
 
-    @standard_reply.error
-    async def standard_reply_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help standard_reply`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help standard_reply`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-            raise err
-
     @standard_reply.command(name='anonymous', aliases=['anon'])
     @has_access()
     @commands.guild_only()
@@ -100,18 +88,6 @@ class standardRepliesCog(commands.Cog):
         finally:
             await ctx.send(embed=embed)
 
-    @show_standard_reply.error
-    async def show_standard_reply_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help show_standard_reply`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help show_standard_reply`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # Create_standard_reply takes category_id int
     #   Asks for reply and description.
     #   Inserts the reply, description and category_id in the database.
@@ -145,18 +121,6 @@ class standardRepliesCog(commands.Cog):
         else:
             await ctx.send(embed=common_embed("Standard Reply",
                                               f"Successfully inserted the new standard reply with the id: **{reply_id}**"))
-
-    @create_standard_reply.error
-    async def create_standard_reply_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help create_standard_reply`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help create_standard_reply`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # standard_reply_set_inactive takes standard_reply_id int
     #   Sets standard reply inactive.
@@ -193,19 +157,6 @@ class standardRepliesCog(commands.Cog):
                                               f"Successfully set standard reply inactive with "
                                               f"ID: {standard_reply_id}."))
 
-    @standard_reply_set_inactive.error
-    async def standard_reply_set_inactive_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(
-                f"Bad argument passed. Please type `{self.bot.command_prefix}help standard_reply_set_inactive`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help standard_reply_set_inactive`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # standard_reply_set_active takes standard_reply_id int
     #   Sets standard reply active.
     #   returns confirmation on success, error on failure.
@@ -241,19 +192,6 @@ class standardRepliesCog(commands.Cog):
             await ctx.send(embed=common_embed("Standard Reply",
                                               f"Successfully set standard reply active with ID: {standard_reply_id}."))
 
-    @standard_reply_set_active.error
-    async def standard_reply_set_active_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(
-                f"Bad argument passed. Please type `{self.bot.command_prefix}help standard_reply_set_active`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help standard_reply_set_active`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # standard_replies takes no arguments
     #   Retrieves all active standard replies in database
     #   returns results on success, error on failure.
@@ -278,13 +216,6 @@ class standardRepliesCog(commands.Cog):
         finally:
             await disputils.BotEmbedPaginator(ctx, embeds).run()
 
-    @standard_replies.error
-    async def standard_replies_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # standard_replies all takes no arguments
     #   Retrieves all standard replies in database, no matter if active or not.
     #   returns results on success, error on failure.
@@ -308,13 +239,6 @@ class standardRepliesCog(commands.Cog):
                                            f"Description: \"{row[2]}\"\n"))
         finally:
             await disputils.BotEmbedPaginator(ctx, embeds).run()
-
-    @standard_replies_all.error
-    async def standard_replies_all_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     @commands.command()
     @is_admin()
@@ -356,18 +280,6 @@ class standardRepliesCog(commands.Cog):
         else:
             await ctx.send(embed=common_embed("Standard Reply",
                                               f"Successfully updated the standard reply with id: {standard_reply_id}"))
-
-    @edit_standard_reply.error
-    async def edit_standard_reply_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help edit_standard_reply`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help edit_standard_reply`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
 
 def setup(bot):

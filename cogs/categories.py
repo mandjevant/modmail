@@ -96,17 +96,6 @@ class CategoriesCog(commands.Cog):
 
         await ctx.send(embed=common_embed("Link category", "Success! The category is successfully registered."))
 
-    @link_category.error
-    async def link_category_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help link_category`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help link_category`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # create_category takes guild_id int and category_name name
     #  makes sure the guild is reachable and permissions are set
     #  asks the user to react with an emoji
@@ -184,17 +173,6 @@ class CategoriesCog(commands.Cog):
 
         await ctx.send(embed=common_embed("Create category", "Success! The category is successfully registered."))
 
-    @create_category.error
-    async def create_category_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help create_category`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help create_category`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # update_emote takes category_id int
     #  makes sure the category is real
     #  asks confirmation for the request
@@ -259,18 +237,6 @@ class CategoriesCog(commands.Cog):
                                       category_id=$2",
                                    reaction.emoji, category_id)
 
-    @update_emote.error
-    async def update_emote_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help update_emote`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help update_emote`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # category_set_active takes category_id int
     #  makes sure the category is real and is inactive
     #  asks confirmation for the request
@@ -306,18 +272,6 @@ class CategoriesCog(commands.Cog):
                                     SET active=TRUE \
                                     WHERE \
                                       category_id=$1", category_id)
-
-    @category_set_active.error
-    async def category_set_active_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help category_set_active`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help category_set_active`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # category_set_inactive takes category_id int
     #  makes sure the category is real and is active
@@ -355,18 +309,6 @@ class CategoriesCog(commands.Cog):
                                     SET active=FALSE \
                                     WHERE \
                                       category_id=$1", category_id)
-
-    @category_set_inactive.error
-    async def category_set_inactive_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help category_set_inactive`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help category_set_inactive`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # categories takes no parameters
     #  gets all active modmail categories
@@ -422,13 +364,6 @@ class CategoriesCog(commands.Cog):
         await msg.delete()
         await disputils.BotEmbedPaginator(ctx, embeds).run()
 
-    @categories.error
-    async def categories_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # category takes category_id int
     #  checks if category is existing
     #  gets information about the category
@@ -450,18 +385,6 @@ class CategoriesCog(commands.Cog):
         category = await self.bot.fetch_channel(category_id)
         await ctx.send(embed=common_embed(f"Category: {category} ({category_id})",
                                           f"Guild: {guild} ({results[3]})\nEmote: {results[4]}\nActive: {results[2]}"))
-
-    @category.error
-    async def category_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help category`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help category`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # update_category_name takes category_id int
     #  checks if category is existing
@@ -497,18 +420,6 @@ class CategoriesCog(commands.Cog):
                                     SET category_name=$1 \
                                     WHERE \
                                       category_id=$2", new_name, category_id)
-
-    @update_category_name.error
-    async def update_category_name_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help update_category_name`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(
-                f"Missing required argument. Please type `{self.bot.command_prefix}help update_category_name`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
 
 def setup(bot):

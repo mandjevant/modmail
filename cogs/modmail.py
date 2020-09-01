@@ -24,7 +24,7 @@ class ModmailCog(commands.Cog):
     @has_access()
     async def reply(self, ctx, *, message: typing.Optional[str]) -> None:
         if message is None and not ctx.message.attachments:
-            raise commands.MissingRequiredArgument
+            raise commands.MissingRequiredArgument(ctx.command)
 
         if message is not None and (len(message) > 2048):
             await ctx.send(embed=common_embed("Modmail Reply",
@@ -46,17 +46,6 @@ class ModmailCog(commands.Cog):
 
         await reply(self.bot, ctx, self.db_conn, conv[1], f'{message} \n', conv[0], attachments=ctx.message.attachments)
 
-    @reply.error
-    async def reply_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help reply`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help reply`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # Reply takes a text of max 2048 characters
     #  replies to modmail with the inputted text anonymously
     #  sends reply on success, error on failure
@@ -65,7 +54,7 @@ class ModmailCog(commands.Cog):
     @commands.guild_only()
     async def anonymous_reply(self, ctx, *, message: typing.Optional[str]) -> None:
         if message is None and not ctx.message.attachments:
-            raise commands.MissingRequiredArgument
+            raise commands.MissingRequiredArgument(ctx.command)
 
         if message is not None and (len(message) > 2048):
             await ctx.send(embed=common_embed("Modmail Reply",
@@ -88,17 +77,6 @@ class ModmailCog(commands.Cog):
 
         await reply(self.bot, ctx, self.db_conn, conv[1], message, conv[0], anon=True,
                     attachments=ctx.message.attachments)
-
-    @anonymous_reply.error
-    async def anonymous_reply_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help anonymous_reply`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help anonymous_reply`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # create takes user discord.Member, int and category int, str.
     #  If category string => Fetches category from string.
@@ -194,18 +172,6 @@ class ModmailCog(commands.Cog):
             await asyncio.sleep(10)
             await ctx.message.delete()
 
-    @create.error
-    async def create_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help create`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help create`.")
-        else:
-            raise err
-            # await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # Close takes no arguments
     #  closes the modmail thread aka channel
     #  sends confirmation on success, error on failure
@@ -242,13 +208,6 @@ class ModmailCog(commands.Cog):
 
         await ctx.channel.delete(reason="Thread Closed")
 
-    @close.error
-    async def close_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # edit takes message str max size of 2048 characters
     #  Checks on what side it is on
     #  If on mod side => edits the most recent message made by mod
@@ -256,6 +215,7 @@ class ModmailCog(commands.Cog):
     #  Edits message on success error on failure.
     @commands.command()
     async def edit(self, ctx, *, message: str) -> None:
+        """Edit the most recent message in thread made by you"""
         if ctx.guild is None:
             results = await self.db_conn.fetchrow("SELECT messages.message_id, messages.other_side_message_id, \
                                                           conversations.user_id, conversations.channel_id, \
@@ -332,17 +292,6 @@ class ModmailCog(commands.Cog):
 
         await ctx.message.add_reaction('✅')
 
-    @edit.error
-    async def edit_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help edit`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help edit`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # Delete takes optional message parameter
     #  Only available for mods, user runs on event
     #  If message parameter is supplied => locates that message and deletes it
@@ -405,13 +354,6 @@ class ModmailCog(commands.Cog):
                                         message_id=$1", results[0])
 
         await ctx.message.add_reaction('✅')
-
-    @delete.error
-    async def delete_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # forward takes no arguments
     #  Sends category selector embed
@@ -506,17 +448,6 @@ class ModmailCog(commands.Cog):
         await asyncio.sleep(10)
         await ctx.channel.delete()
 
-    @forward.error
-    async def forward_error(self, ctx, err: any) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help forward`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help forward`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # Logs takes optional user discord.Member, int
     #  displays the discord user's past modmails in pages
     #  sends paginator(s) on success, error on failure
@@ -592,17 +523,6 @@ class ModmailCog(commands.Cog):
             await disputils.BotEmbedPaginator(ctx, embeds).run()
         else:
             await ctx.send(embed=common_embed('Logs', f'No prior logs found for {user}'))
-
-    @logs.error
-    async def logs_error(self, ctx, err: any):
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help logs`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help logs`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
 
 def setup(bot):

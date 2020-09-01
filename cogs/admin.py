@@ -29,15 +29,9 @@ class adminCog(commands.Cog):
         self.bot.reload_extension('tasks.message_handling')
         self.bot.reload_extension('tasks.verify_categories_tasks')
         self.bot.reload_extension('tasks.member_join_leave')
+        self.bot.reload_extension('tasks.error_handling')
 
         await ctx.send(embed=common_embed("Reload cogs", f"{ctx.author.mention}, all cogs have been reloaded."))
-
-    @reloadcogs.error
-    async def reloadcogs_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # loadcog takes cog str
     #  reloads the cog
@@ -49,17 +43,6 @@ class adminCog(commands.Cog):
         self.bot.load_extension(cog)
         await ctx.send(embed=("Load cog", f"{ctx.author.mention}, `{cog}` has been loaded."))
 
-    @loadcog.error
-    async def loadcog_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type the name of an existing cog.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help loadcog`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # unloadcog takes cog str
     #  unloads the cog
     #  sends confirmation
@@ -69,17 +52,6 @@ class adminCog(commands.Cog):
     async def unloadcog(self, ctx, cog) -> None:
         self.bot.unload_extension(cog)
         await ctx.send(embed=common_embed("Unload cog", f"{ctx.author.mention}, `{cog}` has been unloaded."))
-
-    @unloadcog.error
-    async def unloadcog_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type the name of an existing cog.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help unloadcog`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # query takes fetch str and arg str
     #  runs arg which is query
@@ -113,17 +85,6 @@ class adminCog(commands.Cog):
 
             await ctx.send(embed=common_embed("Query", f"`{arg}` Committed the query."))
 
-    @query.error
-    async def query_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please input a good query. Use `{self.bot.command_prefix}columns`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help query`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # columns takes table str
     #  gets columns from table
     #  sends columns
@@ -135,17 +96,6 @@ class adminCog(commands.Cog):
         colnames = str([key for key, value in result.items()])
         await ctx.send(embed=common_embed("Columns", str(colnames)))
 
-    @columns.error
-    async def columns_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please specify an existing table.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help columns`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # purge takes optional parameter n int
     #  deletes past n messages
     #  sends confirmation
@@ -155,15 +105,6 @@ class adminCog(commands.Cog):
     async def purge(self, ctx, n: typing.Optional[int] = 100) -> None:
         deleted = await ctx.channel.purge(limit=n)
         await ctx.send(embed=common_embed("Purge", f"Deleted {len(deleted)} message(s)."))
-
-    @purge.error
-    async def purge_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send("Bad argument passed. Please input an integer.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # allow takes arg str (users)
     #  allows users in arg to current channel
@@ -188,17 +129,6 @@ class adminCog(commands.Cog):
                     allow_msg = "Added " + self.bot.get_user(int(user_id)).mention + " to " + ctx.channel.mention
                     await ctx.send(embed=common_embed("Allow", allow_msg))
 
-    @allow.error
-    async def allow_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please ping the name(s) of a real user in this guild.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help allow`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     # deny takes arg str (users)
     #  denies users in arg from current channel
     #  sends confirmation
@@ -218,17 +148,6 @@ class adminCog(commands.Cog):
             deny_msg = "Removed " + self.bot.get_user(int(user_id)).mention + " from " + ctx.channel.mention
             await ctx.send(embed=common_embed("Deny", deny_msg))
 
-    @deny.error
-    async def deny_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send("Bad argument passed. Please ping the name(s) of a real user in this channel.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help deny`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
-
     @commands.command()
     @is_owner()
     @commands.guild_only()
@@ -240,13 +159,6 @@ class adminCog(commands.Cog):
         embed = common_embed("", f"Pong! :ping_pong:\n*Bot latency:* {round(self.bot.latency * 1000, 3)}ms\n"
                                  f"*Actual response time:* {round((t2 - t1) * 1000, 3)}ms")
         await msg.edit(embed=embed)
-
-    @ping.error
-    async def ping_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you do not have permission to use this command.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
 
 def setup(bot):

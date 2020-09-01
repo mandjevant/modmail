@@ -90,16 +90,6 @@ class MutedCog(commands.Cog):
                                                         f"for {end_time}. Any messages you send here will not be "
                                                         f"received by the moderator team."))
 
-    @mute.error
-    async def mute_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help mute`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help mute`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # Unmute takes user.
     #  unmutes discord user from modmail
@@ -129,16 +119,6 @@ class MutedCog(commands.Cog):
             finally:
                 await msg.edit(embed=common_embed("Unmute", f'Unmuted user {user.id}'))
 
-    @unmute.error
-    async def unmute_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send(f"Bad argument passed. Please type `{self.bot.command_prefix}help unmute`.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help unmute`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # Muted takes no parameters
     #  Gets all active muted users from modmail
@@ -199,12 +179,6 @@ class MutedCog(commands.Cog):
             for page in paginator.pages:
                 await ctx.send(embed=discord.Embed(color=discord.Color.red(), description=page))
 
-    @muted.error
-    async def muted_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
     # Muted takes a user id or discord.Member
     #  Checks if user is muted
@@ -238,17 +212,6 @@ class MutedCog(commands.Cog):
                                 f"Muted until: {result[3].strftime('%d/%m/%Y, %H:%M')}\n```"))
         else:
             await ctx.send(embed=common_embed("Is muted", "User is not muted and is not in database"))
-
-    @is_muted.error
-    async def is_muted_error(self, ctx, err) -> None:
-        if isinstance(err, commands.CheckFailure):
-            await ctx.send("Sorry, you don't have permission to run this command")
-        elif isinstance(err, commands.BadArgument):
-            await ctx.send("Bad argument passed. I'm missing a user to check.")
-        elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument. Please type `{self.bot.command_prefix}help is_muted`.")
-        else:
-            await ctx.send(f"Unknown error occurred.\n{str(err)}")
 
 
 def setup(bot):
