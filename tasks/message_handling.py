@@ -36,17 +36,20 @@ class messageHandlingTasks(commands.Cog):
                                                            active=true",
                                                       message.channel.id)
 
-                await self.db_conn.execute("INSERT INTO modmail.all_messages_attachments \
-                                            (message_id, message, author_id, conversation_id, made_by_mod) \
-                                            VALUES ($1, $2, $3, $4, false)",
-                                           message.id, message.content, message.author.id, conv_id[0])
+                try:
+                    await self.db_conn.execute("INSERT INTO modmail.all_messages_attachments \
+                                                (message_id, message, author_id, conversation_id, made_by_mod) \
+                                                VALUES ($1, $2, $3, $4, false)",
+                                               message.id, message.content, message.author.id, conv_id[0])
 
-                if message.attachments:
-                    attachment_object = await message.attachments[0].read()
-                    await self.db_conn.execute("UPDATE modmail.all_messages_attachments \
-                                                SET attachment=$1 \
-                                                WHERE \
-                                                    message_id=$2", attachment_object, message.id)
+                    if message.attachments:
+                        attachment_object = await message.attachments[0].read()
+                        await self.db_conn.execute("UPDATE modmail.all_messages_attachments \
+                                                    SET attachment=$1 \
+                                                    WHERE \
+                                                        message_id=$2", attachment_object, message.id)
+                except:
+                    return
 
             return
 
@@ -139,8 +142,8 @@ class messageHandlingTasks(commands.Cog):
                                        message.id, message.content, message.author.id, conv_id[0], thread_msg.id)
 
             await self.db_conn.execute("INSERT INTO modmail.all_messages_attachments \
-                                        (message_id, message, author_id, conversation_id, made_by_mod) \
-                                        VALUES ($1, $2, $3, $4, false)",
+                                        (message_id, message, author_id, conversation_id, made_by_mod, internal) \
+                                        VALUES ($1, $2, $3, $4, false, true)",
                                        message.id, message.content, message.author.id, conv_id[0])
 
             usr_embed = common_embed("Message sent",
@@ -186,8 +189,8 @@ class messageHandlingTasks(commands.Cog):
                                        message.id, message.content, message.author.id, conv[0], thread_msg.id)
 
             await self.db_conn.execute("INSERT INTO modmail.all_messages_attachments \
-                                        (message_id, message, author_id, conversation_id, made_by_mod) \
-                                        VALUES ($1, $2, $3, $4, false)",
+                                        (message_id, message, author_id, conversation_id, made_by_mod, internal) \
+                                        VALUES ($1, $2, $3, $4, false, true)",
                                        message.id, message.content, message.author.id, conv[0])
 
         if message.attachments:
